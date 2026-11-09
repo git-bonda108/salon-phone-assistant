@@ -45,14 +45,27 @@ say "3/6 Deploy identity (OIDC, no secret)"
 APP_ID=$(az ad app list --display-name "$DEPLOY_APP" --query "[0].appId" -o tsv)
 if [ -z "$APP_ID" ]; then APP_ID=$(az ad app create --display-name "$DEPLOY_APP" --query appId -o tsv); fi
 SP_ID=$(az ad sp show --id "$APP_ID" --query id -o tsv 2>/dev/null || az ad sp create --id "$APP_ID" --query id -o tsv)
-if ! az ad app federated-credential list --id "$APP_ID" --query "[?name=='github-main']" -o tsv | grep -q .; then
-  az ad app federated-credential create --id "$APP_ID" -o none --parameters "{
-    \"name\": \"github-main\",
-    \"issuer\": \"https://token.actions.githubusercontent.com\",
-    \"subject\": \"repo:${REPO}:ref:refs/heads/main\",
-    \"audiences\": [\"api://AzureADTokenExchange\"]
-  }"
+# GitHub sends either the classic subject (repo:owner/repo:…) or, for newer repositories and
+# organisations, the immutable form with numeric ids (repo:owner@<id>/repo@<id>:…). Trust both.
+SUBJECTS=("github-main|repo:${REPO}:ref:refs/heads/main")
+GH_JSON=$(curl -fsSL "https://api.github.com/repos/${REPO}" 2>/dev/null || true)
+if [ -n "$GH_JSON" ]; then
+  GH_OWNER_ID=$(echo "$GH_JSON" | jq -r '.owner.id')
+  GH_REPO_ID=$(echo "$GH_JSON" | jq -r '.id')
+  SUBJECTS+=("github-main-ids|repo:${REPO%%/*}@${GH_OWNER_ID}/${REPO##*/}@${GH_REPO_ID}:ref:refs/heads/main")
 fi
+for entry in "${SUBJECTS[@]}"; do
+  name="${entry%%|*}"; subject="${entry#*|}"
+  if ! az ad app federated-credential list --id "$APP_ID" --query "[?name=='${name}']" -o tsv | grep -q .; then
+    az ad app federated-credential create --id "$APP_ID" -o none --parameters "{
+      \"name\": \"${name}\",
+      \"issuer\": \"https://token.actions.githubusercontent.com\",
+      \"subject\": \"${subject}\",
+      \"audiences\": [\"api://AzureADTokenExchange\"]
+    }"
+  fi
+  echo "  trusts ${subject}"
+done
 echo "  app id $APP_ID"
 
 say "4/6 Least privilege: rights on $RG only"
