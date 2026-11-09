@@ -31,3 +31,12 @@ def test_explicit_settings_win_and_no_vault_is_a_noop():
     fake = FakeVault({"tool-api-key": "vault"})
     load_into(s, KeyVaultSecrets("https://kv", client=fake, retry=False))
     assert s.tool_api_key == "set"
+
+
+def test_malformed_json_settings_do_not_crash_startup(monkeypatch):
+    monkeypatch.setenv("GRAPH_CALENDARS", "{}}")  # what azd produced from '${GRAPH_CALENDARS={}}'
+    monkeypatch.setenv("GOOGLE_CALENDAR_IDS", "")
+    s = Settings.from_env()
+    assert s.graph_calendars == {} and s.google_calendar_ids == {}
+    monkeypatch.setenv("GRAPH_CALENDARS", '{"lara": {"user": "me", "calendar_id": "x"}}')
+    assert Settings.from_env().graph_calendars["lara"]["calendar_id"] == "x"

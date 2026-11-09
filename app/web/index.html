@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lina · Salon Edelweiss</title>
+  <meta name="description" content="AI phone assistant for a Swiss hair salon on Suisse Line: bookings in the stylists' calendars, Empty-Chair Recovery, agents with guardrails. All processing in Switzerland.">
+  <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+  <aside class="side" aria-label="Navigation">
+    <div class="brand">
+      <div class="mark" aria-hidden="true"><span>L</span></div>
+      <div>
+        <div class="brand-name">Lina</div>
+        <div class="brand-sub">AI phone assistant · Salon Edelweiss</div>
+      </div>
+    </div>
+    <nav id="nav">
+      <div class="nav-group">Challenge A · Suisse Line</div>
+      <a href="#overview" data-view="overview">Overview</a>
+      <a href="#calendar" data-view="calendar">Calendar</a>
+      <a href="#waitlist" data-view="waitlist">Empty-Chair Recovery</a>
+      <a href="#calls" data-view="calls">Call reviews</a>
+      <a href="#try" data-view="try">Talk to Lina</a>
+      <a href="#copilot" data-view="copilot">Owner copilot</a>
+      <a href="#quality" data-view="quality">Quality &amp; safety</a>
+      <a href="#how" data-view="how">How it works</a>
+      <div class="nav-group">Challenge B · Suisse Meets</div>
+      <a href="#voice" data-view="voice">Voice profiles</a>
+    </nav>
+    <div class="side-foot">
+      <div class="pill pill-ch" id="region-pill"><span class="ch" aria-hidden="true"></span>Processed in Switzerland</div>
+      <div class="muted small" id="engine-line">connecting…</div>
+      <div class="muted small">Synthetic demo data</div>
+      <a class="muted small" href="https://github.com/git-bonda108/salon-phone-assistant" target="_blank" rel="noopener">Source on GitHub ↗</a>
+    </div>
+  </aside>
+
+  <main id="main" tabindex="-1">
+    <section id="view-overview" class="view"></section>
+    <section id="view-calendar" class="view"></section>
+    <section id="view-waitlist" class="view"></section>
+    <section id="view-calls" class="view"></section>
+    <section id="view-try" class="view"></section>
+    <section id="view-copilot" class="view"></section>
+    <section id="view-quality" class="view"></section>
+    <section id="view-how" class="view"></section>
+    <section id="view-voice" class="view"></section>
+  </main>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="/static/app.js"></script>
+</body>
+</html>

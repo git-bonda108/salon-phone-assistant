@@ -90,6 +90,11 @@ class SqliteCalendar:
             ).fetchall()
         return [self._row(r) for r in rows]
 
+    def reset(self) -> None:
+        with self._lock:
+            self.conn.execute("DELETE FROM appointments")
+            self.conn.commit()
+
     def list_range(self, start, end):
         with self._lock:
             rows = self.conn.execute(

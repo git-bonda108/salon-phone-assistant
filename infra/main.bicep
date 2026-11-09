@@ -32,8 +32,11 @@ param judgeCapacity int = 10
 param calendarBackend string = 'sqlite'
 param graphAuth string = 'delegated'
 param graphClientId string = ''
-@description('JSON: {"lara": {"user": "me", "calendar_id": "..."}, ...}')
-param graphCalendars string = '{}'
+@description('JSON: {"lara": {"user": "me", "calendar_id": "..."}, ...}; empty = none')
+param graphCalendars string = ''
+
+@description('Public read-only demo with synthetic data (the interview deployment). Set false for a real salon.')
+param demoMode bool = true
 
 @description('Image set by azd deploy; a public placeholder is used for the very first provision.')
 param apiImage string = 'mcr.microsoft.com/k8se/quickstart:latest'
@@ -227,6 +230,8 @@ resource app 'Microsoft.App/containerApps@2024-03-01' = {
             { name: 'GRAPH_CALENDARS', value: graphCalendars }
             { name: 'DATABASE_PATH', value: '/tmp/lina/app.db' }
             { name: 'OTEL_SERVICE_NAME', value: 'lina-api' }
+            { name: 'PUBLIC_DEMO', value: demoMode ? '1' : '0' }
+            { name: 'DEMO_SEED', value: demoMode ? '1' : '0' }
           ]
           probes: [
             // first start can wait for Key Vault RBAC to propagate: allow up to 5 minutes

@@ -28,6 +28,7 @@ from .ai_agents.runtime import install_local_tracing, make_model
 from .ai_agents.team import AgentTeam
 from .ai_tools import AzureAITools
 from .booking import BookingService, ToolError
+from .web_api import demo_startup, register_web
 from .calendars.sqlite_calendar import SqliteCalendar
 from .config import Settings
 from .mcp_server import build_mcp_server, mcp_asgi
@@ -131,6 +132,8 @@ def create_app(settings: Settings | None = None, clock: Callable[[], datetime] |
         await stack.__aenter__()
         for server in (mcp_caller, mcp_owner):
             await stack.enter_async_context(server.session_manager.run())
+        if settings.demo_seed:
+            asyncio.create_task(demo_startup(svc, team))  # synthetic salon week + reviewed sample calls
         task = None
         if settings.sweep_interval_seconds > 0:
             async def loop():
@@ -161,51 +164,7 @@ def create_app(settings: Settings | None = None, clock: Callable[[], datetime] |
                 "ai": "azure" if ai.online else "offline-rules",
                 "agents": "azure-openai" if team.online else "offline"}
 
-    def require_admin(request: Request) -> None:
-        supplied = (request.headers.get("x-admin-token") or request.query_params.get("token")
-                    or (request.headers.get("authorization") or "").removeprefix("Bearer ").strip())
-        if not check_api_key(settings.admin_token, supplied, None):
-            raise HTTPException(status_code=401, detail="admin token required")
-
-    @app.post("/agents/prompt-lab")
-    async def prompt_lab(request: Request):
-        require_admin(request)
-        body = await request.json()
-        msg = str(body.get("message", "")).strip()[:2000]
-        if not msg:
-            raise HTTPException(status_code=400, detail="message required")
-        return await team.prompt_lab(str(body.get("session_id") or "default"), msg,
-                                     str(body.get("phone") or "+41790000000"))
-
-    @app.post("/agents/prompt-lab/reset")
-    async def prompt_lab_reset(request: Request):
-        require_admin(request)
-        team.reset_sandbox()
-        return {"ok": True}
-
-    @app.post("/agents/copilot")
-    async def copilot(request: Request):
-        require_admin(request)
-        body = await request.json()
-        msg = str(body.get("message", "")).strip()[:2000]
-        if not msg:
-            raise HTTPException(status_code=400, detail="message required")
-        return await team.copilot(str(body.get("session_id") or "owner"), msg)
-
-    @app.get("/api/reviews")
-    def reviews(request: Request, limit: int = 50):
-        require_admin(request)
-        return {"ok": True, "reviews": store.reviews(limit)}
-
-    @app.get("/api/traces")
-    def traces(request: Request, limit: int = 30):
-        require_admin(request)
-        return {"ok": True, "traces": store.recent_traces(limit)}
-
-    @app.get("/api/traces/{trace_id}")
-    def trace_spans(trace_id: str, request: Request):
-        require_admin(request)
-        return {"ok": True, "trace_id": trace_id, "spans": store.spans(trace_id)}
+    register_web(app, settings, svc, team, store, cal)
 
     @app.post("/tools/{tool}")
     async def run_tool(tool: str, request: Request):

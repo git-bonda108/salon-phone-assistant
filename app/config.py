@@ -3,11 +3,25 @@
 from __future__ import annotations
 
 import json
+import logging
 import os
 from dataclasses import dataclass, field
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+
+
+def _json_env(name: str) -> dict:
+    """A malformed JSON setting must not stop the app: log it and use {}."""
+    raw = (os.environ.get(name) or "").strip()
+    if not raw:
+        return {}
+    try:
+        value = json.loads(raw)
+        return value if isinstance(value, dict) else {}
+    except ValueError:
+        logging.getLogger("config").error("%s is not valid JSON; ignoring it", name)
+        return {}
 
 
 @dataclass
@@ -39,6 +53,8 @@ class Settings:
     azure_openai_api_version: str = "2025-04-01-preview"
     key_vault_url: str = ""
     review_calls: bool = True                   # run the call-reviewer agent on call.completed
+    public_demo: bool = False                   # read-only web app + rate-limited agents without login (synthetic data only)
+    demo_seed: bool = False                     # fill an empty calendar with a synthetic salon week
 
     @classmethod
     def from_env(cls) -> "Settings":
@@ -48,7 +64,7 @@ class Settings:
             database_path=e("DATABASE_PATH", cls.database_path),
             calendar_backend=e("CALENDAR_BACKEND", "sqlite").lower(),
             google_service_account_json=e("GOOGLE_SERVICE_ACCOUNT_JSON", ""),
-            google_calendar_ids=json.loads(e("GOOGLE_CALENDAR_IDS", "{}") or "{}"),
+            google_calendar_ids=_json_env("GOOGLE_CALENDAR_IDS"),
             tool_api_key=e("TOOL_API_KEY", ""),
             webhook_secret=e("WEBHOOK_SECRET", ""),
             webhook_signature_header=e("WEBHOOK_SIGNATURE_HEADER", "X-Signature"),
@@ -58,7 +74,7 @@ class Settings:
             offer_ttl_minutes=int(e("OFFER_TTL_MINUTES", "20")),
             sweep_interval_seconds=int(e("SWEEP_INTERVAL_SECONDS", "60")),
             graph_auth=e("GRAPH_AUTH", "app"),
-            graph_calendars=json.loads(e("GRAPH_CALENDARS", "{}") or "{}"),
+            graph_calendars=_json_env("GRAPH_CALENDARS"),
             graph_client_id=e("GRAPH_CLIENT_ID", ""),
             graph_token_cache=e("GRAPH_TOKEN_CACHE", ""),
             azure_ai_endpoint=e("AZURE_AI_ENDPOINT", ""),
@@ -69,4 +85,6 @@ class Settings:
             azure_openai_api_version=e("AZURE_OPENAI_API_VERSION", "2025-04-01-preview"),
             key_vault_url=e("KEY_VAULT_URL", ""),
             review_calls=e("REVIEW_CALLS", "1") == "1",
+            public_demo=e("PUBLIC_DEMO", "0") == "1",
+            demo_seed=e("DEMO_SEED", "0") == "1",
         )

@@ -26,7 +26,7 @@ jobs:
       AZURE_OWNER_OBJECT_ID: ${{ vars.AZURE_OWNER_OBJECT_ID }}
       GRAPH_CLIENT_ID: ${{ vars.GRAPH_CLIENT_ID }}
       CALENDAR_BACKEND: ${{ vars.CALENDAR_BACKEND || 'sqlite' }}
-      GRAPH_CALENDARS: ${{ vars.GRAPH_CALENDARS || '{}' }}
+      GRAPH_CALENDARS: ${{ vars.GRAPH_CALENDARS || '' }}
       DEPLOY_JUDGE: ${{ vars.DEPLOY_JUDGE || 'false' }}
     steps:
       - uses: actions/checkout@v4

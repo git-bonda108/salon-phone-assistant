@@ -75,7 +75,22 @@ def main() -> int:
                                                                                          "callId": "verify"}).status_code == 401, "401 expected"))
     check("MCP caller requires key", lambda: (c.post("/mcp/caller/", json=init, headers=mcp_hdr).status_code == 401, "401 expected"))
     check("MCP owner requires token", lambda: (c.post("/mcp/owner/", json=init, headers=mcp_hdr).status_code == 401, "401 expected"))
-    check("agents require admin", lambda: (c.post("/agents/prompt-lab", json={"message": "hi"}).status_code == 401, "401 expected"))
+    demo = {}
+
+    def demo_mode():
+        nonlocal demo
+        r = c.get("/api/overview")
+        demo = r.json() if r.status_code == 200 else {}
+        return r.status_code in (200, 401), "public demo (read-only, synthetic data)" if demo.get("public_demo") else "private: 401"
+    check("web views: public demo or private", demo_mode)
+
+    def agents_access():
+        code = c.post("/agents/prompt-lab", json={"message": "Hallo"}).status_code
+        if demo.get("public_demo"):
+            return code in (200, 429), f"{code} (public demo, rate-limited)"
+        return code == 401, f"{code}, 401 expected"
+    check("agent endpoints: admin, or rate-limited demo", agents_access)
+    check("web app served", lambda: (c.get("/").status_code == 200 and "Lina" in c.get("/").text, "index.html"))
     check("admin view requires token", lambda: (c.get("/admin").status_code == 401, "401 expected"))
 
     # --- authenticated checks ----------------------------------------------------

@@ -280,6 +280,14 @@ class Store:
         rows = self._q("SELECT * FROM call_reviews ORDER BY created_at DESC LIMIT ?", (limit,))
         return [dict(r) | {"flags": json.loads(r["flags"]), "review": json.loads(r["review"])} for r in rows]
 
+    def reset_all(self) -> None:
+        """Demo reset only."""
+        with self.lock:
+            for table in ("customers", "waitlist", "offers", "calls", "events", "agent_spans", "agent_traces",
+                          "call_reviews", "outbox"):
+                self.conn.execute(f"DELETE FROM {table}")
+            self.conn.commit()
+
     def add_outbox(self, kind: str, payload: dict, delivered: bool, error: str | None = None) -> None:
         self._x(
             "INSERT INTO outbox(kind, payload, delivered, error, created_at) VALUES (?,?,?,?,?)",

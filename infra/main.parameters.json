@@ -6,10 +6,11 @@
     "location": { "value": "${AZURE_LOCATION=switzerlandnorth}" },
     "ownerObjectId": { "value": "${AZURE_OWNER_OBJECT_ID=}" },
     "deployJudge": { "value": "${DEPLOY_JUDGE=false}" },
+    "demoMode": { "value": "${DEMO_MODE=true}" },
     "calendarBackend": { "value": "${CALENDAR_BACKEND=sqlite}" },
     "graphAuth": { "value": "${GRAPH_AUTH=delegated}" },
     "graphClientId": { "value": "${GRAPH_CLIENT_ID=}" },
-    "graphCalendars": { "value": "${GRAPH_CALENDARS={}}" },
+    "graphCalendars": { "value": "${GRAPH_CALENDARS}" },
     "apiImage": { "value": "${SERVICE_API_IMAGE_NAME=mcr.microsoft.com/k8se/quickstart:latest}" }
   }
 }
