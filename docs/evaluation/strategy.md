@@ -4,7 +4,7 @@
 
 | Level | Question | How | Runs | Status |
 | --- | --- | --- | --- | --- |
-| **1 Deterministic** | Are bookings always correct? Do guardrails hold? | `pytest`: availability, booking races, idempotency, waitlist cascade, webhooks, Google + Outlook adapters, MCP scopes, AI tools, agents with a scripted model (guardrails, sandbox, reviewer) | every push (CI) | 78 tests, green |
+| **1 Deterministic** | Are bookings always correct? Do guardrails hold? | `pytest`: availability, booking races, idempotency, waitlist cascade, webhooks, Google + Outlook adapters, MCP scopes, AI tools, agents with a scripted model (guardrails, sandbox, reviewer) | every push (CI) | 85 tests, green |
 | **2 Contract** | Does our config fit the platform? | tool schemas vs. Suisse Line's documented limits; generated `tools.json` up to date; Bicep compiles and lints; container starts | every push (CI) | green |
 | **3 Conversation** | Does the assistant behave well in real conversations, including hostile ones? | **evaluation lab**: AI callers (Agents SDK) talk to the prompt lab and, with a Suisse Speech key, to the real Suisse voice agent; an AI judge scores against a rubric; Foundry evaluators score tool use | nightly and before prompt changes | next |
 | **4 Real world** | Does it work on a real phone line? | test calls on the Suisse Line number using the [manual matrix](test-plan.md); metrics from webhooks and the call reviewer | before launch, then weekly | next |

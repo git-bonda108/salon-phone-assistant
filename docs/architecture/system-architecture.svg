@@ -176,7 +176,7 @@
 <rect x="1395" y="818" width="175" height="132" rx="12" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
 <rect x="1395" y="830" width="4" height="108" rx="2" fill="#334155"/>
 <text x="1413" y="846" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="14.5" font-weight="650" fill="#0B1220" text-anchor="start">GitHub</text>
-<text x="1413" y="868" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="12.5" font-weight="400" fill="#334155" text-anchor="start">CI: 84 tests + contract</text>
+<text x="1413" y="868" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="12.5" font-weight="400" fill="#334155" text-anchor="start">CI: 85 tests + contract</text>
 <text x="1413" y="887" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="12.5" font-weight="400" fill="#334155" text-anchor="start">Actions → Azure (OIDC)</text>
 <text x="1413" y="906" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="12.5" font-weight="400" fill="#334155" text-anchor="start">no stored secrets</text>
 <text x="1413" y="925" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="12.5" font-weight="400" fill="#334155" text-anchor="start">azd + Bicep</text>

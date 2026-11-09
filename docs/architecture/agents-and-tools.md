@@ -21,7 +21,7 @@ Our own agents use the MCP servers **in-process** ([`InProcessMCP`](../../app/mc
 
 | Tool | Service | Used by |
 | --- | --- | --- |
-| `prompt_shield` | Content Safety, Prompt Shields | input guardrail (prompt lab, copilot), call reviewer |
+| `prompt_shield` | Content Safety Prompt Shields, plus override-phrase rules (either signal counts; see [findings](../safety/guardrails.md#findings-from-the-live-system)) | input guardrail (prompt lab, copilot), call reviewer |
 | `moderate_text` | Content Safety, harm categories | input guardrail, call reviewer |
 | `redact_pii` | AI Language, PII detection (chunked to the 5,000-character limit) | call reviewer, **before anything is stored** |
 | `analyze_sentiment`, `detect_language` | AI Language | call reviewer |

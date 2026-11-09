@@ -323,7 +323,7 @@ async function quality(el) {
   <p class="lead">A phone assistant that can change a calendar is an attack surface: anyone with a phone can talk to it. The strongest controls do not depend
   on a model, and every guardrail has a test that was confirmed by breaking the guardrail and watching the test fail.</p></div></div>
   <div class="grid k6">
-    ${kpi("Automated tests", "78", "every push, < 5 s", "accent")}
+    ${kpi("Automated tests", "85", "every push, < 5 s", "accent")}
     ${kpi("Guardrail layers", "5", "L1–L5, each tested", "win")}
     ${kpi("Wrong bookings allowed", "0", "deterministic booking core", "win")}
     ${kpi("Processing outside CH", "0", "regional deployments only", "win")}
@@ -333,7 +333,7 @@ async function quality(el) {
     <div class="stack">
       <div class="card"><h2>Four levels of testing</h2><table>
         <tr><th>Level</th><th>Question</th><th>How</th></tr>
-        <tr><td><b>1</b></td><td>Are bookings always right?</td><td>78 tests: slots, races, waitlist cascade, calendars, MCP scopes, agents with a scripted model</td></tr>
+        <tr><td><b>1</b></td><td>Are bookings always right?</td><td>85 tests: slots, races, waitlist cascade, calendars, MCP scopes, agents with a scripted model</td></tr>
         <tr><td><b>2</b></td><td>Does it fit the platform?</td><td>tool schemas vs. Suisse Line limits · Bicep compiles · container starts</td></tr>
         <tr><td><b>3</b></td><td>Does it converse well, also under attack?</td><td>AI callers in 5 languages + attacker personas, AI judge with rubric, Foundry evaluators</td></tr>
         <tr><td><b>4</b></td><td>Does it work on a real line?</td><td>test calls on the Suisse Line number, 15-case matrix, metrics from call reviews</td></tr></table></div>
