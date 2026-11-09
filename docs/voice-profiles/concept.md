@@ -69,6 +69,23 @@ The worst error is a **wrong name**: it attributes words to the wrong colleague.
 * **No training on customer voices** (model weights are shared and trained on licensed and public data). Any future improvement program would need a separate opt-in.
 * **Verified, not assumed:** CI isolation tests (a job for tenant A seeded with tenant B's profile must never match), RLS policy tests, deletion tests (profile, key and vector are gone; the backup restore test can't decrypt), plus an external penetration test before GA.
 
+## How it plugs into Suisse Meets today
+
+The public Suisse Meets API (v1) already delivers what recognition builds on. `POST /api/v1/transcribe` with `enhanced_speaker_diarization=true` returns `transcript.segments[]` with `speaker`, `start_ms`, `end_ms` and `confidence`, plus a `speakers[]` list. Voice profiles add **one step between diarisation and the transcript the user sees**:
+
+```
+audio ──► Suisse Meets: transcribe + diarise ──► segments (Speaker 1, Speaker 2 …, start/end ms)
+                                                   │
+          audio slices per speaker (≥ 2 s, no overlap) ──► embedding ──► match against the
+                                                   │                       tenant's profiles
+                                                   ▼
+                         Speaker 1 → "Anna Meier" (0.82) · Speaker 2 → "Speaker 2" (no match)
+```
+
+* The prototype runs the voice-profile service **next to** the API: it sends test meetings with `zero_data_retention=true`, so Suisse Meets deletes audio, transcript and summaries right after handing them over. It verifies the `X-Suisse-Notes-Signature` webhook HMAC and deduplicates on `delivery.id`.
+* In the product, the same step would run inside the Suisse Meets pipeline, before the transcript is stored, on any device (phone, recorder, browser), because diarisation is already device-independent.
+* Recognised names are written to the existing `speaker` field, so the apps, summaries and documents need no change.
+
 ## 4. Build, test and launch, step by step
 
 | Phase | Weeks | Deliverable | Exit criterion |

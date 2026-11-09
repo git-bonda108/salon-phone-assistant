@@ -1,6 +1,6 @@
 """Google Calendar backend.
 
-Setup (see docs/google-calendar-setup.md):
+Setup (see docs/operations/google-calendar-setup.md):
   * one Google calendar per stylist (the owner keeps using it normally),
   * a Google Cloud service account, each stylist calendar shared with it
     ("Make changes to events"),
