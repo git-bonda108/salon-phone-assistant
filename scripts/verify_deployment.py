@@ -37,6 +37,18 @@ def main() -> int:
         print(__doc__)
         return 2
     base = sys.argv[1].rstrip("/")
+    wait = int(sys.argv[sys.argv.index("--wait") + 1]) if "--wait" in sys.argv else 0
+    if wait:
+        import time
+        deadline = time.time() + wait
+        while time.time() < deadline:
+            try:
+                if httpx.get(f"{base}/health", timeout=10).status_code == 200:
+                    break
+            except httpx.HTTPError:
+                pass
+            print("waiting for the app to start …", flush=True)
+            time.sleep(10)
     tool_key = os.environ.get("TOOL_API_KEY", "")
     admin = os.environ.get("ADMIN_TOKEN", "")
     c = httpx.Client(base_url=base, timeout=60)

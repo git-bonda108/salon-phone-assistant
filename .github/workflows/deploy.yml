@@ -49,4 +49,17 @@ jobs:
       - name: Deploy (remote image build in ACR)
         run: azd deploy --no-prompt
       - name: Verify deployment
-        run: python scripts/verify_deployment.py "$(azd env get-value SERVICE_API_URI)"
+        run: python scripts/verify_deployment.py "$(azd env get-value SERVICE_API_URI)" --wait 300
+      - name: Diagnostics (container logs)
+        if: failure()
+        run: |
+          az login --service-principal -u "${{ vars.AZURE_CLIENT_ID }}" -t "${{ vars.AZURE_TENANT_ID }}" \
+            --federated-token "$(curl -sSf -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+              "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=api://AzureADTokenExchange" | jq -r .value)" -o none
+          az account set -s "$AZURE_SUBSCRIPTION_ID"
+          APP=$(azd env get-value SERVICE_API_NAME 2>/dev/null || true)
+          [ -z "$APP" ] && exit 0
+          echo "::group::revisions"; az containerapp revision list -n "$APP" -g "$AZURE_RESOURCE_GROUP" \
+            --query "[].{name:name,active:properties.active,health:properties.healthState,running:properties.runningState,replicas:properties.replicas}" -o table; echo "::endgroup::"
+          echo "::group::system log"; az containerapp logs show -n "$APP" -g "$AZURE_RESOURCE_GROUP" --type system --tail 60 || true; echo "::endgroup::"
+          echo "::group::console log"; az containerapp logs show -n "$APP" -g "$AZURE_RESOURCE_GROUP" --type console --tail 200 || true; echo "::endgroup::"

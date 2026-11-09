@@ -229,6 +229,8 @@ resource app 'Microsoft.App/containerApps@2024-03-01' = {
             { name: 'OTEL_SERVICE_NAME', value: 'lina-api' }
           ]
           probes: [
+            // first start can wait for Key Vault RBAC to propagate: allow up to 5 minutes
+            { type: 'Startup', httpGet: { path: '/health', port: 8000 }, periodSeconds: 10, failureThreshold: 30 }
             { type: 'Liveness', httpGet: { path: '/health', port: 8000 }, periodSeconds: 30 }
             { type: 'Readiness', httpGet: { path: '/health', port: 8000 }, periodSeconds: 10 }
           ]

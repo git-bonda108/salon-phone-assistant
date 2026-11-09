@@ -18,7 +18,7 @@ class FakeVault:
 def test_existing_secrets_are_loaded_and_missing_own_secrets_generated():
     fake = FakeVault({"webhook-secret": "from-suisse-line", "graph-token-cache": "{}"})
     s = Settings(database_path=":memory:")
-    load_into(s, KeyVaultSecrets("https://kv", client=fake))
+    load_into(s, KeyVaultSecrets("https://kv", client=fake, retry=False))
     assert s.webhook_secret == "from-suisse-line" and s.graph_token_cache == "{}"
     assert len(s.tool_api_key) >= 40 and fake.data["tool-api-key"] == s.tool_api_key
     assert s.admin_token and s.admin_token != s.tool_api_key
@@ -29,5 +29,5 @@ def test_explicit_settings_win_and_no_vault_is_a_noop():
     s = Settings(database_path=":memory:", tool_api_key="set")
     assert load_into(s) is None and s.tool_api_key == "set"
     fake = FakeVault({"tool-api-key": "vault"})
-    load_into(s, KeyVaultSecrets("https://kv", client=fake))
+    load_into(s, KeyVaultSecrets("https://kv", client=fake, retry=False))
     assert s.tool_api_key == "set"

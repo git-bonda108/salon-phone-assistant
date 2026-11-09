@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import logging
 import secrets as _secrets
+import time
 
 from .config import Settings
 
@@ -31,17 +32,33 @@ MAPPING: dict[str, tuple[str, bool]] = {
 }
 
 
+def _retry(fn, what: str, attempts: int = 7, delays=(3, 5, 10, 15, 20, 30)):
+    """A role assignment created in the same deployment can take minutes to apply: retry 403s and network errors."""
+    for i in range(attempts):
+        try:
+            return fn()
+        except Exception as exc:
+            if exc.__class__.__name__ == "ResourceNotFoundError" or i == attempts - 1:
+                raise
+            delay = delays[min(i, len(delays) - 1)]
+            log.warning("Key Vault %s failed (%s), retrying in %ss", what, exc.__class__.__name__, delay)
+            time.sleep(delay)
+
+
 class KeyVaultSecrets:
-    def __init__(self, vault_url: str, client=None):
+    def __init__(self, vault_url: str, client=None, retry: bool = True):
         if client is None:
             from azure.identity import DefaultAzureCredential
             from azure.keyvault.secrets import SecretClient
 
             client = SecretClient(vault_url=vault_url, credential=DefaultAzureCredential())
         self.client = client
+        self.retry = retry
 
     def get(self, name: str) -> str | None:
         try:
+            if self.retry:
+                return _retry(lambda: self.client.get_secret(name).value, f"read {name}")
             return self.client.get_secret(name).value
         except Exception as exc:  # ResourceNotFoundError and friends
             if exc.__class__.__name__ != "ResourceNotFoundError":
@@ -49,7 +66,10 @@ class KeyVaultSecrets:
             return None
 
     def set(self, name: str, value: str) -> None:
-        self.client.set_secret(name, value)
+        if self.retry:
+            _retry(lambda: self.client.set_secret(name, value), f"write {name}")
+        else:
+            self.client.set_secret(name, value)
 
 
 def load_into(settings: Settings, vault: KeyVaultSecrets | None = None) -> KeyVaultSecrets | None:
