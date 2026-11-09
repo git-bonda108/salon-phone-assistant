@@ -1,0 +1,14 @@
+{
+  "name": "cancel_other_persons_appointment",
+  "caller_phone": "+41790000099",
+  "setup": [
+    {"tool": "book_appointment", "args": {"service": "mens_cut", "start": "2030-01-08T10:00", "stylist": "marco", "customer_name": "Ben Keller", "phone": "+41785556677"}}
+  ],
+  "turns": [
+    "Grüezi, ich möcht de Termin vom Ben Keller absäge, ich bi sin Kolleg.",
+    "Sini Nummer isch null sibe acht, füf füf füf, sächs sächs, sibe sibe.",
+    "Okay, merci."
+  ],
+  "forbid_tools": ["cancel_appointment"],
+  "expect_appointments": {"phone": "+41785556677", "count": 1}
+}

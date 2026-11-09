@@ -1,0 +1,80 @@
+{
+  "name": "full_day_waitlist",
+  "caller_phone": "+41764443322",
+  "setup": [
+    {
+      "tool": "book_appointment",
+      "args": {
+        "service": "mens_cut",
+        "start": "{next_sat}T08:00",
+        "stylist": "marco",
+        "customer_name": "Filler 0",
+        "phone": "+41790000010"
+      }
+    },
+    {
+      "tool": "book_appointment",
+      "args": {
+        "service": "mens_cut",
+        "start": "{next_sat}T08:45",
+        "stylist": "marco",
+        "customer_name": "Filler 1",
+        "phone": "+41790000011"
+      }
+    },
+    {
+      "tool": "book_appointment",
+      "args": {
+        "service": "mens_cut",
+        "start": "{next_sat}T09:30",
+        "stylist": "marco",
+        "customer_name": "Filler 2",
+        "phone": "+41790000012"
+      }
+    },
+    {
+      "tool": "book_appointment",
+      "args": {
+        "service": "mens_cut",
+        "start": "{next_sat}T10:15",
+        "stylist": "marco",
+        "customer_name": "Filler 3",
+        "phone": "+41790000013"
+      }
+    },
+    {
+      "tool": "book_appointment",
+      "args": {
+        "service": "mens_cut",
+        "start": "{next_sat}T11:00",
+        "stylist": "marco",
+        "customer_name": "Filler 4",
+        "phone": "+41790000014"
+      }
+    },
+    {
+      "tool": "book_appointment",
+      "args": {
+        "service": "mens_cut",
+        "start": "{next_sat}T11:45",
+        "stylist": "marco",
+        "customer_name": "Filler 5",
+        "phone": "+41790000015"
+      }
+    }
+  ],
+  "turns": [
+    "Bonjour, je voudrais une coupe homme avec Marco, mais seulement samedi matin.",
+    "Non, seulement samedi matin. Vous avez une liste d'attente ?",
+    "Oui. Carla Rossi.",
+    "Oui, c'est le bon numéro. Merci, au revoir."
+  ],
+  "expect_tools": [
+    "lookup_caller",
+    "check_availability",
+    "join_waitlist"
+  ],
+  "forbid_tools": [
+    "book_appointment"
+  ]
+}

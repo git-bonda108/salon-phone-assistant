@@ -1,0 +1,133 @@
+{
+  "_comment": "Live tools for the Suisse Line agent. Each tool = POST {BASE_URL}{path} with header X-Api-Key: {TOOL_API_KEY}. Parameter schemas use only the JSON-Schema subset Suisse Line accepts (no format/pattern/oneOf). tests/test_suisse_line_config.py enforces this.",
+  "tools": [
+    {
+      "name": "lookup_caller",
+      "path": "/tools/lookup_caller",
+      "description": "Call this FIRST in every call. Returns today's date and time (needed to resolve 'tomorrow', 'next Thursday'), today's opening hours, whether the caller is a returning customer (name, last service, last stylist), their upcoming appointments and any pending waitlist offer.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "phone": {"type": "string", "description": "Caller's phone number from caller ID, e.g. +41791234567. Empty if unknown."}
+        }
+      }
+    },
+    {
+      "name": "check_availability",
+      "path": "/tools/check_availability",
+      "description": "Find free appointment times. Returns at most 3 options (start time + stylist). If the requested day is closed or full it returns the next free options and says whether the waitlist is possible. Never invent times — only offer what this tool returns.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "service": {"type": "string", "description": "Service id.", "enum": ["womens_cut", "mens_cut", "kids_cut", "beard", "colour_roots", "balayage", "blow_dry", "updo"]},
+          "date": {"type": "string", "description": "Requested day as YYYY-MM-DD. Leave empty for 'as soon as possible'."},
+          "stylist": {"type": "string", "description": "Preferred stylist.", "enum": ["any", "lara", "marco", "sina"]},
+          "time_of_day": {"type": "string", "description": "Rough preference.", "enum": ["any", "morning", "afternoon", "evening"]},
+          "preferred_time": {"type": "string", "description": "Specific wished time as HH:MM, e.g. 14:30. Options closest to it come first."}
+        },
+        "required": ["service"]
+      }
+    },
+    {
+      "name": "book_appointment",
+      "path": "/tools/book_appointment",
+      "description": "Book an appointment. Only call after the caller explicitly confirmed service, day, time, stylist, name and phone number. Use start and stylist exactly as returned by check_availability. If the slot was just taken, returns ok=false with new options.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "service": {"type": "string", "description": "Service id.", "enum": ["womens_cut", "mens_cut", "kids_cut", "beard", "colour_roots", "balayage", "blow_dry", "updo"]},
+          "start": {"type": "string", "description": "Start as YYYY-MM-DDTHH:MM, from check_availability."},
+          "stylist": {"type": "string", "description": "Stylist id from check_availability.", "enum": ["lara", "marco", "sina"]},
+          "customer_name": {"type": "string", "description": "First and last name of the customer, spelled as confirmed."},
+          "phone": {"type": "string", "description": "Customer's phone number, e.g. +41791234567."},
+          "notes": {"type": "string", "description": "Optional short note, e.g. 'first colour, patch test needed' or 'very long hair'."}
+        },
+        "required": ["service", "start", "stylist", "customer_name", "phone"]
+      }
+    },
+    {
+      "name": "find_appointments",
+      "path": "/tools/find_appointments",
+      "description": "List the upcoming appointments booked under a phone number. Use before cancelling or moving an appointment.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "phone": {"type": "string", "description": "Caller's phone number."}
+        },
+        "required": ["phone"]
+      }
+    },
+    {
+      "name": "cancel_appointment",
+      "path": "/tools/cancel_appointment",
+      "description": "Cancel one appointment of the caller after they confirmed which one. Returns late_cancellation=true if less than 24 hours before (mention the cancellation policy politely). The freed slot is automatically offered to the waitlist.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "phone": {"type": "string", "description": "Caller's phone number (must match the booking)."},
+          "appointment_id": {"type": "string", "description": "appointment_id from find_appointments or lookup_caller."}
+        },
+        "required": ["phone", "appointment_id"]
+      }
+    },
+    {
+      "name": "reschedule_appointment",
+      "path": "/tools/reschedule_appointment",
+      "description": "Move an existing appointment to a new time the caller chose from check_availability. The old appointment is only released if the new one could be booked.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "phone": {"type": "string", "description": "Caller's phone number (must match the booking)."},
+          "appointment_id": {"type": "string", "description": "appointment_id of the appointment to move."},
+          "new_start": {"type": "string", "description": "New start as YYYY-MM-DDTHH:MM, from check_availability."},
+          "stylist": {"type": "string", "description": "Stylist for the new slot; empty keeps the same stylist if possible.", "enum": ["lara", "marco", "sina"]}
+        },
+        "required": ["phone", "appointment_id", "new_start"]
+      }
+    },
+    {
+      "name": "join_waitlist",
+      "path": "/tools/join_waitlist",
+      "description": "Put the caller on the waitlist when no offered time fits. As soon as a matching slot frees up (cancellation), the salon calls them back with an offer.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "phone": {"type": "string", "description": "Caller's phone number."},
+          "customer_name": {"type": "string", "description": "First and last name."},
+          "service": {"type": "string", "description": "Service id.", "enum": ["womens_cut", "mens_cut", "kids_cut", "beard", "colour_roots", "balayage", "blow_dry", "updo"]},
+          "date_from": {"type": "string", "description": "Earliest acceptable day, YYYY-MM-DD."},
+          "date_to": {"type": "string", "description": "Latest acceptable day, YYYY-MM-DD."},
+          "stylist": {"type": "string", "description": "Only this stylist, or any.", "enum": ["any", "lara", "marco", "sina"]},
+          "time_of_day": {"type": "string", "description": "Time preference.", "enum": ["any", "morning", "afternoon", "evening"]}
+        },
+        "required": ["phone", "customer_name", "service"]
+      }
+    },
+    {
+      "name": "accept_offer",
+      "path": "/tools/accept_offer",
+      "description": "The caller accepts a pending waitlist offer (from lookup_caller.pending_offer). Books the held slot.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "phone": {"type": "string", "description": "Caller's phone number."},
+          "offer_id": {"type": "string", "description": "offer_id of the pending offer."}
+        },
+        "required": ["phone", "offer_id"]
+      }
+    },
+    {
+      "name": "decline_offer",
+      "path": "/tools/decline_offer",
+      "description": "The caller declines a pending waitlist offer. They stay on the waitlist; the slot goes to the next person.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "phone": {"type": "string", "description": "Caller's phone number."},
+          "offer_id": {"type": "string", "description": "offer_id of the pending offer."}
+        },
+        "required": ["phone", "offer_id"]
+      }
+    }
+  ]
+}

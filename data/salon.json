@@ -1,0 +1,47 @@
+{
+  "name": "Salon Edelweiss",
+  "address": "Seefeldstrasse 42, 8008 Zürich",
+  "phone": "+41 44 000 00 00",
+  "timezone": "Europe/Zurich",
+  "slot_step_minutes": 15,
+  "buffer_minutes": 10,
+  "min_lead_minutes": 60,
+  "max_days_ahead": 60,
+  "late_cancellation_hours": 24,
+  "opening_hours": {
+    "tue": [["09:00", "18:30"]],
+    "wed": [["09:00", "18:30"]],
+    "thu": [["09:00", "20:00"]],
+    "fri": [["09:00", "18:30"]],
+    "sat": [["08:00", "16:00"]]
+  },
+  "services": [
+    {"id": "womens_cut", "name": "Women's cut & blow-dry", "name_de": "Damenhaarschnitt inkl. Föhnen", "duration_minutes": 60, "price_chf": 89,
+     "aliases": ["women's cut", "ladies cut", "damenschnitt", "damenhaarschnitt", "haarschnitt damen"]},
+    {"id": "mens_cut", "name": "Men's cut", "name_de": "Herrenhaarschnitt", "duration_minutes": 30, "price_chf": 49,
+     "aliases": ["men's cut", "herrenschnitt", "herrenhaarschnitt", "haarschnitt herren"]},
+    {"id": "kids_cut", "name": "Kids' cut (under 12)", "name_de": "Kinderhaarschnitt (bis 12)", "duration_minutes": 30, "price_chf": 35,
+     "aliases": ["kids cut", "children's cut", "kinderschnitt", "kinderhaarschnitt"]},
+    {"id": "beard", "name": "Beard trim", "name_de": "Bartpflege", "duration_minutes": 20, "price_chf": 25,
+     "aliases": ["beard", "bart", "bartpflege", "bart schneiden"]},
+    {"id": "colour_roots", "name": "Root colour", "name_de": "Ansatzfarbe", "duration_minutes": 90, "price_chf": 119,
+     "aliases": ["colour", "color", "roots", "farbe", "färben", "ansatz", "ansatzfarbe"]},
+    {"id": "balayage", "name": "Balayage incl. cut", "name_de": "Balayage inkl. Schnitt", "duration_minutes": 180, "price_chf": 249,
+     "aliases": ["balayage", "highlights", "strähnen", "mèches"]},
+    {"id": "blow_dry", "name": "Wash & blow-dry", "name_de": "Waschen & Föhnen", "duration_minutes": 30, "price_chf": 45,
+     "aliases": ["blow dry", "blow-dry", "styling", "föhnen", "waschen föhnen"]},
+    {"id": "updo", "name": "Updo / occasion styling", "name_de": "Hochsteckfrisur", "duration_minutes": 60, "price_chf": 95,
+     "aliases": ["updo", "wedding hair", "hochsteckfrisur", "brautfrisur"]}
+  ],
+  "stylists": [
+    {"id": "lara", "name": "Lara", "role": "owner, colour specialist",
+     "services": ["womens_cut", "colour_roots", "balayage", "blow_dry", "updo"],
+     "working_days": ["tue", "wed", "thu", "fri", "sat"], "google_calendar_id": ""},
+    {"id": "marco", "name": "Marco", "role": "barber",
+     "services": ["mens_cut", "kids_cut", "beard"],
+     "working_days": ["tue", "wed", "thu", "fri", "sat"], "google_calendar_id": ""},
+    {"id": "sina", "name": "Sina", "role": "stylist",
+     "services": ["womens_cut", "mens_cut", "kids_cut", "blow_dry", "colour_roots", "updo"],
+     "working_days": ["wed", "thu", "fri", "sat"], "google_calendar_id": ""}
+  ]
+}

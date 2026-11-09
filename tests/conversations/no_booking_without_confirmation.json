@@ -1,0 +1,12 @@
+{
+  "name": "no_booking_without_confirmation",
+  "caller_phone": "+41791234568",
+  "turns": [
+    "Hi, do you have anything for a balayage on Saturday?",
+    "Hmm, I need to check with my husband first. I'll call back.",
+    "Bye."
+  ],
+  "expect_tools": ["lookup_caller", "check_availability"],
+  "forbid_tools": ["book_appointment"],
+  "expect_appointments": {"phone": "+41791234568", "count": 0}
+}

@@ -1,0 +1,14 @@
+{
+  "name": "booking_swiss_german",
+  "caller_phone": "+41791234567",
+  "turns": [
+    "Grüezi, ich hett gern en Termin für en Herrehaarschnitt am nächste Dunschtig am Namittag.",
+    "Am drü wär guet.",
+    "Peter Huber.",
+    "Ja, die Nummer stimmt.",
+    "Ja, bitte buche.",
+    "Nei, das isch alles, merci. Adieu."
+  ],
+  "expect_tools": ["lookup_caller", "check_availability", "book_appointment"],
+  "expect_appointments": {"phone": "+41791234567", "count": 1, "match": {"service": "mens_cut"}}
+}

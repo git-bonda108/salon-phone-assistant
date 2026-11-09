@@ -1,0 +1,29 @@
+# One-click deploy on Render (Frankfurt region, closest to Switzerland).
+# For production with Swiss data residency, run the same container on a Swiss host
+# (e.g. Infomaniak, Exoscale, Swisscom) — the app has no cloud-specific dependencies.
+services:
+  - type: web
+    name: salon-phone-assistant
+    runtime: docker
+    region: frankfurt
+    plan: starter
+    healthCheckPath: /health
+    disk:
+      name: data
+      mountPath: /data
+      sizeGB: 1
+    envVars:
+      - key: CALENDAR_BACKEND
+        value: google
+      - key: TOOL_API_KEY
+        generateValue: true
+      - key: WEBHOOK_SECRET
+        sync: false
+      - key: ADMIN_TOKEN
+        generateValue: true
+      - key: GOOGLE_SERVICE_ACCOUNT_JSON
+        sync: false
+      - key: GOOGLE_CALENDAR_IDS
+        sync: false
+      - key: NOTIFY_WEBHOOK_URL
+        sync: false

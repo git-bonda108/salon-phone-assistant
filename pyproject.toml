@@ -1,0 +1,9 @@
+[project]
+name = "salon-phone-assistant"
+version = "1.0.0"
+description = "AI phone assistant for a hair salon on Suisse Line: books appointments in Google Calendar, with waitlist-based empty-chair recovery."
+requires-python = ">=3.11"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q -p no:warnings"
