@@ -67,13 +67,21 @@ GRAPH_CLIENT_ID=$(az ad app list --display-name "$OUTLOOK_APP" --query "[0].appI
 if [ -z "$GRAPH_CLIENT_ID" ]; then
   GRAPH_CLIENT_ID=$(az ad app create --display-name "$OUTLOOK_APP" --is-fallback-public-client true \
     --public-client-redirect-uris "https://login.microsoftonline.com/common/oauth2/nativeclient" --query appId -o tsv)
-  # personal (outlook.com) + work accounts need v2 access tokens before the audience can change
-  az ad app update --id "$GRAPH_CLIENT_ID" --set api.requestedAccessTokenVersion=2
-  az ad app update --id "$GRAPH_CLIENT_ID" --sign-in-audience AzureADandPersonalMicrosoftAccount
-  az ad app permission add --id "$GRAPH_CLIENT_ID" --api "$GRAPH_API" \
-    --api-permissions "${CALENDARS_READWRITE_DELEGATED}=Scope" -o none
 fi
-echo "  client id $GRAPH_CLIENT_ID"
+GRAPH_APP_OBJECT_ID=$(az ad app show --id "$GRAPH_CLIENT_ID" --query id -o tsv)
+# Personal (outlook.com) + work accounts: v2 access tokens first, then the audience.
+# Set through Microsoft Graph, because a new app has no 'api' section for `az ad app update --set`.
+az rest --method PATCH --uri "https://graph.microsoft.com/v1.0/applications/${GRAPH_APP_OBJECT_ID}" \
+  --headers "Content-Type=application/json" --body '{"api": {"requestedAccessTokenVersion": 2}}' -o none
+az rest --method PATCH --uri "https://graph.microsoft.com/v1.0/applications/${GRAPH_APP_OBJECT_ID}" \
+  --headers "Content-Type=application/json" \
+  --body '{"signInAudience": "AzureADandPersonalMicrosoftAccount", "isFallbackPublicClient": true}' -o none
+if ! az ad app permission list --id "$GRAPH_CLIENT_ID" \
+     --query "[?resourceAppId=='${GRAPH_API}'].resourceAccess[].id" -o tsv | grep -q "$CALENDARS_READWRITE_DELEGATED"; then
+  az ad app permission add --id "$GRAPH_CLIENT_ID" --api "$GRAPH_API" \
+    --api-permissions "${CALENDARS_READWRITE_DELEGATED}=Scope" -o none 2>/dev/null || true
+fi
+echo "  client id $GRAPH_CLIENT_ID (personal + work accounts, Calendars.ReadWrite delegated)"
 
 say "6/6 Values for GitHub → Settings → Secrets and variables → Actions → Variables"
 OWNER_ID=$(az ad signed-in-user show --query id -o tsv 2>/dev/null || echo "")
