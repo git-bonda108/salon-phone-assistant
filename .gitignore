@@ -6,3 +6,4 @@ var/
 *.db
 service-account*.json
 .pytest_cache/
+dist/
