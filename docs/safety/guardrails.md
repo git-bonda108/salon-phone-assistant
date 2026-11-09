@@ -23,9 +23,11 @@ A phone assistant that can change a calendar is an attack surface: anyone with a
 | --- | --- | --- | --- |
 | **L1 Tool boundary** | booking core | ownership checks, validation, idempotency, lock, fail-closed calendar, API key, HMAC | **no** |
 | **L2 Prompt** | Suisse Line agent | confirm before booking; never invent times, prices or policies; human hand-over; privacy rule | yes |
-| **L3 Agent guardrails** | Agents SDK (prompt lab, copilot) | *input:* Azure AI Content Safety Prompt Shields + harm categories; *output:* every time and price in a reply must appear in a tool result of the same turn | partly |
-| **L4 Post-call audit** | call reviewer agent | PII redaction (AI Language), prompt-attack and harm detection, claims checked against the calendar | partly |
+| **L3 Agent guardrails** | Agents SDK (prompt lab, copilot) | *input:* Azure AI Content Safety Prompt Shields + harm categories, run **before** the model; *output:* every time and price in a reply must appear in a tool result, the knowledge base or the user's words | partly |
+| **L4 Post-call audit** | call reviewer | deterministic first: PII redaction (AI Language + rules), Prompt Shields, harm, claim-vs-record check; then the agent adds judgement and can never clear a deterministic flag | partly |
 | **L5 Red-team evaluation** | evaluation lab | attacker personas in every run, pass rates tracked | — |
+
+Implementation and the tests that prove each guardrail: [agents, tools and MCP](../architecture/agents-and-tools.md#guardrails-in-the-agent-loop).
 
 All Azure AI safety services run in **Switzerland North**, where Prompt Shields and harm detection are available. Language note: Content Safety is trained and tested on German, French and Italian, among others. Swiss German transcripts arrive as standard German text, and quality is measured in the evaluation lab rather than assumed.
 
@@ -37,7 +39,7 @@ All Azure AI safety services run in **Switzerland North**, where Prompt Shields 
 | Appointments (name, phone, service, time) | salon's calendar | salon's policy | source of truth |
 | Waitlist, offers, customer name and phone | booking store (Azure CH North) | waitlist entries expire after their date range | minimal fields |
 | Call log (summary, redacted transcript) | booking store (Azure CH North) | 90 days | redacted before storage (L4) |
-| Traces and metrics | App Insights (Azure CH North) | 30 days | no raw transcripts |
+| Agent traces (spans incl. tool arguments) | booking store + App Insights (Azure CH North) | 30 days | the Agents SDK's default export to OpenAI is **disabled** |
 | Secrets | Key Vault (Azure CH North) | — | only third-party secrets; Azure access is keyless |
 
 Callers' data is never used to train models. Azure OpenAI does not train on customer prompts, and model deployments are regional.

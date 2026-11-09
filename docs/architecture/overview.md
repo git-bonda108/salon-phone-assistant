@@ -21,7 +21,7 @@
 2. Lina calls the live tools `check_availability` → `book_appointment` over HTTPS with an API key. The booking core computes free slots from service duration, stylist skills and days, buffers and lead time, then re-checks under a lock and writes the event.
 3. The event lands in the stylist's calendar with the caller's number in private properties, so the booking can be found again later.
 
-**④ After the call: review** *(next)*
+**④ After the call: review**
 A signed `call.completed` webhook arrives. The **call reviewer** agent redacts personal data (AI Language), checks for prompt attacks and abuse (Content Safety), and checks the assistant's claims against the calendar ("Lina said *booked*: is there an event?"). Problems are flagged on the dashboard.
 
 **Ⓐ → Ⓑ A cancellation refills the chair**
@@ -38,11 +38,15 @@ The owner signs in with Entra ID and sees bookings, waitlist, call reviews with 
 | Availability engine | pure functions: slots from hours, durations, buffers, lead time | [`app/slots.py`](../../app/slots.py) | built |
 | Booking service | tools, idempotency, ownership checks, Empty-Chair Recovery | [`app/booking.py`](../../app/booking.py) | built |
 | HTTP layer | `/tools/*` (always HTTP 200 + speakable message), HMAC webhook, admin | [`app/main.py`](../../app/main.py) | built |
-| Calendar adapters | Google (FreeBusy + private properties), SQLite (local), Microsoft 365 | [`app/calendars/`](../../app/calendars) | Google + SQLite built · M365 next |
-| MCP server | same tools for agents and MCP clients ([0003](../decisions/0003-one-tool-registry-http-and-mcp.md)) | `app/mcp_server.py` | next |
-| Agents | call reviewer, prompt lab, evaluation lab, owner copilot ([0005](../decisions/0005-ai-around-the-call-not-in-the-booking-path.md)) | `agents/` | next |
+| Calendar adapters | Google (FreeBusy + private properties), Microsoft 365 / Outlook (Graph calendarView + extended properties), SQLite (local) | [`app/calendars/`](../../app/calendars) | built |
+| Tool registry | every tool defined once; HTTP, MCP and `tools.json` derive from it | [`app/tools.py`](../../app/tools.py) | built |
+| MCP servers | caller and owner scopes ([0003](../decisions/0003-one-tool-registry-http-and-mcp.md)) | [`app/mcp_server.py`](../../app/mcp_server.py) | built |
+| Azure AI tools | Prompt Shields, harm, PII redaction, sentiment, language, with offline rules | [`app/ai_tools.py`](../../app/ai_tools.py) | built |
+| Agents | prompt lab, call reviewer, owner copilot; guardrails; local tracing ([0005](../decisions/0005-ai-around-the-call-not-in-the-booking-path.md), [details](agents-and-tools.md)) | [`app/ai_agents/`](../../app/ai_agents) | built |
+| Secrets | Key Vault, own secrets generated on first start | [`app/secrets.py`](../../app/secrets.py) | built |
+| Infrastructure | Bicep + azd, keyless GitHub OIDC ([0007](../decisions/0007-keyless-deployment.md)), [deploy guide](../operations/deploy-azure.md) | [`infra/`](../../infra) | built · deployment pending owner setup |
+| Evaluation lab | AI callers + judge, attacker personas | `evals/` | next |
 | Web app | owner cockpit and demo | `web/` | next |
-| Infrastructure | Bicep + azd, keyless GitHub OIDC ([0007](../decisions/0007-keyless-deployment.md)) | `infra/` | next |
 
 ## Tool design for a voice model
 

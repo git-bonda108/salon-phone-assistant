@@ -15,93 +15,54 @@ import html
 import json
 import logging
 import sqlite3
-from contextlib import asynccontextmanager
+from contextlib import AsyncExitStack, asynccontextmanager
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Callable
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import BackgroundTasks, FastAPI, HTTPException, Request
 from fastapi.responses import HTMLResponse, JSONResponse
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import BaseModel, ValidationError
 
+from .ai_agents.runtime import install_local_tracing, make_model
+from .ai_agents.team import AgentTeam
+from .ai_tools import AzureAITools
 from .booking import BookingService, ToolError
 from .calendars.sqlite_calendar import SqliteCalendar
 from .config import Settings
+from .mcp_server import build_mcp_server, mcp_asgi
 from .notifier import Notifier
 from .salon import load_salon
+from .secrets import load_into
 from .security import check_api_key, verify_signature
 from .store import Store
 from .timeutil import local_iso, normalize_phone
+from .tools import CALLER_TOOLS
 
 log = logging.getLogger("app")
+_telemetry_on = False
 
 
-# ---------------------------------------------------------------- tool inputs
-class _In(BaseModel):
-    model_config = ConfigDict(extra="ignore", str_strip_whitespace=True)
+def _enable_telemetry() -> None:
+    """Logs, requests and traces to App Insights (Switzerland North) when Azure provides the connection string."""
+    global _telemetry_on
+    import os
+
+    if _telemetry_on or not os.environ.get("APPLICATIONINSIGHTS_CONNECTION_STRING"):
+        return
+    try:
+        from azure.monitor.opentelemetry import configure_azure_monitor
+
+        configure_azure_monitor(logger_name="", enable_live_metrics=False)
+        logging.getLogger().setLevel(logging.INFO)
+        _telemetry_on = True
+    except Exception:  # telemetry must never stop the app
+        log.exception("App Insights setup failed")
 
 
-class LookupCallerIn(_In):
-    phone: str | None = None
-
-
-class CheckAvailabilityIn(_In):
-    service: str
-    date: str | None = None
-    stylist: str | None = None
-    time_of_day: str | None = "any"
-    preferred_time: str | None = None
-
-
-class BookIn(_In):
-    service: str
-    start: str
-    customer_name: str
-    phone: str
-    stylist: str | None = None
-    notes: str | None = ""
-
-
-class PhoneIn(_In):
-    phone: str
-
-
-class AppointmentIn(_In):
-    phone: str
-    appointment_id: str
-
-
-class RescheduleIn(AppointmentIn):
-    new_start: str
-    stylist: str | None = None
-
-
-class WaitlistIn(_In):
-    phone: str
-    customer_name: str
-    service: str
-    date_from: str | None = None
-    date_to: str | None = None
-    stylist: str | None = None
-    time_of_day: str | None = "any"
-
-
-class OfferIn(_In):
-    phone: str
-    offer_id: str
-
-
-TOOLS: dict[str, tuple[type[BaseModel], str]] = {
-    "lookup_caller": (LookupCallerIn, "lookup_caller"),
-    "check_availability": (CheckAvailabilityIn, "check_availability"),
-    "book_appointment": (BookIn, "book_appointment"),
-    "find_appointments": (PhoneIn, "find_appointments"),
-    "cancel_appointment": (AppointmentIn, "cancel_appointment"),
-    "reschedule_appointment": (RescheduleIn, "reschedule_appointment"),
-    "join_waitlist": (WaitlistIn, "join_waitlist"),
-    "accept_offer": (OfferIn, "accept_offer"),
-    "decline_offer": (OfferIn, "decline_offer"),
-}
+# Tool definitions live in app/tools.py (single registry). Only *caller* tools are
+# exposed on /tools/*: the Suisse Line key must never reach owner tools.
+TOOLS: dict[str, tuple[type[BaseModel], str]] = {t.name: (t.model, t.method) for t in CALLER_TOOLS}
 
 
 def _unwrap(body: object) -> dict:
@@ -121,30 +82,55 @@ def _unwrap(body: object) -> dict:
     return body
 
 
-def build_calendar(settings: Settings, conn: sqlite3.Connection, salon):
+def build_calendar(settings: Settings, conn: sqlite3.Connection, salon, vault=None):
     if settings.calendar_backend == "google":
         from .calendars.google_calendar import GoogleCalendar, build_google_service
 
         ids = {s.id: settings.google_calendar_ids.get(s.id) or s.google_calendar_id for s in salon.stylists}
         return GoogleCalendar(build_google_service(settings.google_service_account_json), ids, salon.tz)
+    if settings.calendar_backend == "outlook":
+        from .calendars.outlook_calendar import OutlookCalendar, app_token_provider, delegated_token_provider
+
+        if settings.graph_auth == "delegated":
+            persist = (lambda data: vault.set("graph-token-cache", data)) if vault else None
+            token = delegated_token_provider(settings.graph_client_id, settings.graph_token_cache, persist)
+        else:
+            token = app_token_provider()
+        return OutlookCalendar(token, settings.graph_calendars, salon.tz)
     return SqliteCalendar(conn, salon.tz)
 
 
 def create_app(settings: Settings | None = None, clock: Callable[[], datetime] | None = None,
-               calendar=None) -> FastAPI:
+               calendar=None, model=None, judge_model=None) -> FastAPI:
     settings = settings or Settings.from_env()
+    _enable_telemetry()
+    vault = load_into(settings)  # Key Vault (keyless) fills empty secrets; no-op without KEY_VAULT_URL
     salon = load_salon(settings.salon_config)
     if settings.database_path != ":memory:":
         Path(settings.database_path).parent.mkdir(parents=True, exist_ok=True)
     conn = sqlite3.connect(settings.database_path, check_same_thread=False)
     conn.row_factory = sqlite3.Row
     store = Store(conn)
-    cal = calendar or build_calendar(settings, conn, salon)
+    cal = calendar or build_calendar(settings, conn, salon, vault)
     notifier = Notifier(store, settings.notify_webhook_url, settings.notify_signing_secret)
     svc = BookingService(salon, cal, store, notifier, clock=clock, offer_ttl_minutes=settings.offer_ttl_minutes)
+    ai = AzureAITools(settings.azure_ai_endpoint, api_key=settings.azure_ai_key)
+
+    # MCP: same registry, two scopes, two credentials (see app/mcp_server.py)
+    mcp_caller = build_mcp_server(svc, "caller")
+    mcp_owner = build_mcp_server(svc, "owner", ai_tools=ai)
+    install_local_tracing(store)  # agent traces stay in Switzerland (never exported to OpenAI)
+    team = AgentTeam(svc, ai, model=model or make_model(settings),
+                     judge_model=judge_model or make_model(settings, settings.azure_openai_judge_deployment))
+    caller_asgi = mcp_asgi(mcp_caller, lambda: settings.tool_api_key)
+    owner_asgi = mcp_asgi(mcp_owner, lambda: settings.admin_token)
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
+        stack = AsyncExitStack()
+        await stack.__aenter__()
+        for server in (mcp_caller, mcp_owner):
+            await stack.enter_async_context(server.session_manager.run())
         task = None
         if settings.sweep_interval_seconds > 0:
             async def loop():
@@ -158,14 +144,68 @@ def create_app(settings: Settings | None = None, clock: Callable[[], datetime] |
         yield
         if task:
             task.cancel()
+        await stack.__aexit__(None, None, None)
 
     app = FastAPI(title=f"{salon.name} – phone assistant backend", version="1.0.0", lifespan=lifespan)
     app.state.svc = svc
     app.state.settings = settings
+    app.state.ai = ai
+    app.state.team = team
+    app.state.mcp = {"caller": mcp_caller, "owner": mcp_owner}
+    app.mount("/mcp/caller", caller_asgi)
+    app.mount("/mcp/owner", owner_asgi)
 
     @app.get("/health")
     def health():
-        return {"ok": True, "salon": salon.name, "calendar": settings.calendar_backend}
+        return {"ok": True, "salon": salon.name, "calendar": settings.calendar_backend,
+                "ai": "azure" if ai.online else "offline-rules",
+                "agents": "azure-openai" if team.online else "offline"}
+
+    def require_admin(request: Request) -> None:
+        supplied = (request.headers.get("x-admin-token") or request.query_params.get("token")
+                    or (request.headers.get("authorization") or "").removeprefix("Bearer ").strip())
+        if not check_api_key(settings.admin_token, supplied, None):
+            raise HTTPException(status_code=401, detail="admin token required")
+
+    @app.post("/agents/prompt-lab")
+    async def prompt_lab(request: Request):
+        require_admin(request)
+        body = await request.json()
+        msg = str(body.get("message", "")).strip()[:2000]
+        if not msg:
+            raise HTTPException(status_code=400, detail="message required")
+        return await team.prompt_lab(str(body.get("session_id") or "default"), msg,
+                                     str(body.get("phone") or "+41790000000"))
+
+    @app.post("/agents/prompt-lab/reset")
+    async def prompt_lab_reset(request: Request):
+        require_admin(request)
+        team.reset_sandbox()
+        return {"ok": True}
+
+    @app.post("/agents/copilot")
+    async def copilot(request: Request):
+        require_admin(request)
+        body = await request.json()
+        msg = str(body.get("message", "")).strip()[:2000]
+        if not msg:
+            raise HTTPException(status_code=400, detail="message required")
+        return await team.copilot(str(body.get("session_id") or "owner"), msg)
+
+    @app.get("/api/reviews")
+    def reviews(request: Request, limit: int = 50):
+        require_admin(request)
+        return {"ok": True, "reviews": store.reviews(limit)}
+
+    @app.get("/api/traces")
+    def traces(request: Request, limit: int = 30):
+        require_admin(request)
+        return {"ok": True, "traces": store.recent_traces(limit)}
+
+    @app.get("/api/traces/{trace_id}")
+    def trace_spans(trace_id: str, request: Request):
+        require_admin(request)
+        return {"ok": True, "trace_id": trace_id, "spans": store.spans(trace_id)}
 
     @app.post("/tools/{tool}")
     async def run_tool(tool: str, request: Request):
@@ -199,7 +239,7 @@ def create_app(settings: Settings | None = None, clock: Callable[[], datetime] |
         return JSONResponse(result)
 
     @app.post("/webhooks/suisse-line")
-    async def suisse_line_webhook(request: Request):
+    async def suisse_line_webhook(request: Request, background: BackgroundTasks):
         raw = await request.body()
         if settings.webhook_secret:
             if not verify_signature(settings.webhook_secret, raw,
@@ -217,6 +257,8 @@ def create_app(settings: Settings | None = None, clock: Callable[[], datetime] |
             f"{call_id}:{event}", normalize_phone(payload.get("phoneNumber")), event,
             payload.get("summary", ""), payload.get("duration"), payload,
         )
+        if is_new and event == "call.completed" and settings.review_calls:
+            background.add_task(team.review_call, call_id, payload)  # answer the webhook fast, review afterwards
         return {"ok": True, "duplicate": not is_new}
 
     @app.get("/admin", response_class=HTMLResponse)

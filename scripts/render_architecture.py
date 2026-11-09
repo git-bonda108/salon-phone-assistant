@@ -100,7 +100,7 @@ box(645, 172, 405, 196, "Booking core · deterministic", [
 ], tag="BUILT")
 pill(663, 312, 170, 40, "HTTPS live tools", [], tag=None)
 pill(845, 312, 140, 40, "MCP server", [], tag=None)
-status(1036, 324, "NEXT")
+status(1036, 324, "BUILT")
 text(1000, 338, "", size=1)
 shield(1036, 296, "L1")
 
@@ -110,20 +110,20 @@ box(1072, 172, 268, 196, "Data & platform", [
     "managed identity: keyless access",
     "App Insights: traces · metrics",
     "Container Apps · Registry · Bicep",
-], tag="NEXT")
+], tag="BUILT")
 
-box(645, 392, 695, 186, "Agents · OpenAI Agents SDK · tools via MCP", [], tag="NEXT")
+box(645, 392, 695, 186, "Agents · OpenAI Agents SDK · tools via MCP", [], tag="BUILT")
 pill(663, 434, 156, 84, "Call reviewer", ["after every call", "verify · redact · flag"])
-pill(831, 434, 156, 84, "Prompt lab", ["text twin of Lina", "regression tests"])
-pill(999, 434, 156, 84, "Evaluation lab", ["AI callers + judge", "incl. attackers"])
-pill(1167, 434, 156, 84, "Owner copilot", ["questions, insights", "changes need approval"])
+pill(831, 434, 156, 84, "Prompt lab", ["text twin of Lina", "sandbox calendar"])
+pill(999, 434, 156, 84, "Evaluation lab", ["AI callers + judge", "incl. attackers"], tag="NEXT")
+pill(1167, 434, 156, 84, "Owner copilot", ["questions, insights", "read-only tools"])
 text(663, 548, "input guardrail: Prompt Shields · output guardrail: every time and price must come from a tool result", size=11.5, fill=MUTED)
 shield(1318, 545, "L3")
-shield(1141, 440, "L5")
+shield(1143, 506, "L5")
 
-box(645, 602, 695, 150, "Azure AI services · called as tools", [], tag="NEXT")
+box(645, 602, 695, 150, "Azure AI services · called as tools", [], tag="BUILT")
 pill(663, 642, 156, 92, "Azure OpenAI", ["in Foundry", "regional deployment"])
-pill(831, 642, 156, 92, "AI Speech", ["TTS de-CH voices", "STT + diarisation"])
+pill(831, 642, 156, 92, "AI Speech", ["TTS de-CH voices", "films · B prototype"], tag="NEXT")
 pill(999, 642, 156, 92, "AI Language", ["PII redaction", "language · sentiment"])
 pill(1167, 642, 156, 92, "Content Safety", ["Prompt Shields", "harm categories"])
 shield(1309, 650, "L4")
@@ -146,7 +146,7 @@ text(1395, 150, "SALON'S OWN", size=11, weight=750, fill=MUTED, ls="1.2")
 box(1395, 172, 175, 132, "Calendar", ["Google Calendar", "Microsoft 365 (Graph)", "1 calendar / stylist", "staff edit as usual"], bar=PINE, tag=None, title_size=14.5)
 status(1556, 178, "BUILT")
 text(1395, 800, "DELIVERY", size=11, weight=750, fill=MUTED, ls="1.2")
-box(1395, 818, 175, 132, "GitHub", ["CI: 39 tests + contract", "Actions → Azure (OIDC)", "no stored secrets", "azd + Bicep"], bar=SLATE, title_size=14.5)
+box(1395, 818, 175, 132, "GitHub", ["CI: 78 tests + contract", "Actions → Azure (OIDC)", "no stored secrets", "azd + Bicep"], bar=SLATE, title_size=14.5)
 
 # flows
 arrow("M215,212 H268", LAKE); num(241, 196, "1")

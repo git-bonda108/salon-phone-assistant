@@ -71,8 +71,8 @@
 <text x="675" y="336" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="13" font-weight="650" fill="#0B1220" text-anchor="start">HTTPS live tools</text>
 <rect x="845" y="312" width="140" height="40" rx="10" fill="#FFFFFF" stroke="#CBD5E1"/>
 <text x="857" y="336" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="13" font-weight="650" fill="#0B1220" text-anchor="start">MCP server</text>
-<rect x="990" y="324" width="46" height="18" rx="9" fill="#FDF3E1"/>
-<text x="1013.0" y="336.5" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#C77700" text-anchor="middle" letter-spacing="0.6">NEXT</text>
+<rect x="986" y="324" width="50" height="18" rx="9" fill="#E7F5EE"/>
+<text x="1011.0" y="336.5" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#13804B" text-anchor="middle" letter-spacing="0.6">BUILT</text>
 <text x="1000" y="338" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="1" font-weight="400" fill="#334155" text-anchor="start"></text>
 <g transform="translate(1036,296)"><path d="M0,-13 L11,-8.5 V1.5 C11,9 0,14 0,14 C0,14 -11,9 -11,1.5 V-8.5 Z" fill="#13804B"/>
 <text x="0" y="3.5" font-family="Inter, system-ui, sans-serif" font-size="9" font-weight="800" fill="#fff" text-anchor="middle">L1</text></g>
@@ -83,12 +83,12 @@
 <text x="1090" y="260" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="12.5" font-weight="400" fill="#334155" text-anchor="start">managed identity: keyless access</text>
 <text x="1090" y="279" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="12.5" font-weight="400" fill="#334155" text-anchor="start">App Insights: traces · metrics</text>
 <text x="1090" y="298" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="12.5" font-weight="400" fill="#334155" text-anchor="start">Container Apps · Registry · Bicep</text>
-<rect x="1280" y="186" width="46" height="18" rx="9" fill="#FDF3E1"/>
-<text x="1303.0" y="198.5" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#C77700" text-anchor="middle" letter-spacing="0.6">NEXT</text>
+<rect x="1276" y="186" width="50" height="18" rx="9" fill="#E7F5EE"/>
+<text x="1301.0" y="198.5" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#13804B" text-anchor="middle" letter-spacing="0.6">BUILT</text>
 <rect x="645" y="392" width="695" height="186" rx="12" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
 <text x="663" y="420" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="15" font-weight="650" fill="#0B1220" text-anchor="start">Agents · OpenAI Agents SDK · tools via MCP</text>
-<rect x="1280" y="406" width="46" height="18" rx="9" fill="#FDF3E1"/>
-<text x="1303.0" y="418.5" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#C77700" text-anchor="middle" letter-spacing="0.6">NEXT</text>
+<rect x="1276" y="406" width="50" height="18" rx="9" fill="#E7F5EE"/>
+<text x="1301.0" y="418.5" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#13804B" text-anchor="middle" letter-spacing="0.6">BUILT</text>
 <rect x="663" y="434" width="156" height="84" rx="10" fill="#FFFFFF" stroke="#CBD5E1"/>
 <text x="675" y="458" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="13" font-weight="650" fill="#0B1220" text-anchor="start">Call reviewer</text>
 <text x="675" y="477" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="11.5" font-weight="400" fill="#64748B" text-anchor="start">after every call</text>
@@ -96,24 +96,26 @@
 <rect x="831" y="434" width="156" height="84" rx="10" fill="#FFFFFF" stroke="#CBD5E1"/>
 <text x="843" y="458" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="13" font-weight="650" fill="#0B1220" text-anchor="start">Prompt lab</text>
 <text x="843" y="477" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="11.5" font-weight="400" fill="#64748B" text-anchor="start">text twin of Lina</text>
-<text x="843" y="493" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="11.5" font-weight="400" fill="#64748B" text-anchor="start">regression tests</text>
+<text x="843" y="493" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="11.5" font-weight="400" fill="#64748B" text-anchor="start">sandbox calendar</text>
 <rect x="999" y="434" width="156" height="84" rx="10" fill="#FFFFFF" stroke="#CBD5E1"/>
 <text x="1011" y="458" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="13" font-weight="650" fill="#0B1220" text-anchor="start">Evaluation lab</text>
 <text x="1011" y="477" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="11.5" font-weight="400" fill="#64748B" text-anchor="start">AI callers + judge</text>
 <text x="1011" y="493" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="11.5" font-weight="400" fill="#64748B" text-anchor="start">incl. attackers</text>
+<rect x="1101" y="442" width="46" height="18" rx="9" fill="#FDF3E1"/>
+<text x="1124.0" y="454.5" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#C77700" text-anchor="middle" letter-spacing="0.6">NEXT</text>
 <rect x="1167" y="434" width="156" height="84" rx="10" fill="#FFFFFF" stroke="#CBD5E1"/>
 <text x="1179" y="458" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="13" font-weight="650" fill="#0B1220" text-anchor="start">Owner copilot</text>
 <text x="1179" y="477" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="11.5" font-weight="400" fill="#64748B" text-anchor="start">questions, insights</text>
-<text x="1179" y="493" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="11.5" font-weight="400" fill="#64748B" text-anchor="start">changes need approval</text>
+<text x="1179" y="493" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="11.5" font-weight="400" fill="#64748B" text-anchor="start">read-only tools</text>
 <text x="663" y="548" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="11.5" font-weight="400" fill="#64748B" text-anchor="start">input guardrail: Prompt Shields · output guardrail: every time and price must come from a tool result</text>
 <g transform="translate(1318,545)"><path d="M0,-13 L11,-8.5 V1.5 C11,9 0,14 0,14 C0,14 -11,9 -11,1.5 V-8.5 Z" fill="#13804B"/>
 <text x="0" y="3.5" font-family="Inter, system-ui, sans-serif" font-size="9" font-weight="800" fill="#fff" text-anchor="middle">L3</text></g>
-<g transform="translate(1141,440)"><path d="M0,-13 L11,-8.5 V1.5 C11,9 0,14 0,14 C0,14 -11,9 -11,1.5 V-8.5 Z" fill="#13804B"/>
+<g transform="translate(1143,506)"><path d="M0,-13 L11,-8.5 V1.5 C11,9 0,14 0,14 C0,14 -11,9 -11,1.5 V-8.5 Z" fill="#13804B"/>
 <text x="0" y="3.5" font-family="Inter, system-ui, sans-serif" font-size="9" font-weight="800" fill="#fff" text-anchor="middle">L5</text></g>
 <rect x="645" y="602" width="695" height="150" rx="12" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
 <text x="663" y="630" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="15" font-weight="650" fill="#0B1220" text-anchor="start">Azure AI services · called as tools</text>
-<rect x="1280" y="616" width="46" height="18" rx="9" fill="#FDF3E1"/>
-<text x="1303.0" y="628.5" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#C77700" text-anchor="middle" letter-spacing="0.6">NEXT</text>
+<rect x="1276" y="616" width="50" height="18" rx="9" fill="#E7F5EE"/>
+<text x="1301.0" y="628.5" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#13804B" text-anchor="middle" letter-spacing="0.6">BUILT</text>
 <rect x="663" y="642" width="156" height="92" rx="10" fill="#FFFFFF" stroke="#CBD5E1"/>
 <text x="675" y="666" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="13" font-weight="650" fill="#0B1220" text-anchor="start">Azure OpenAI</text>
 <text x="675" y="685" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="11.5" font-weight="400" fill="#64748B" text-anchor="start">in Foundry</text>
@@ -121,7 +123,9 @@
 <rect x="831" y="642" width="156" height="92" rx="10" fill="#FFFFFF" stroke="#CBD5E1"/>
 <text x="843" y="666" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="13" font-weight="650" fill="#0B1220" text-anchor="start">AI Speech</text>
 <text x="843" y="685" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="11.5" font-weight="400" fill="#64748B" text-anchor="start">TTS de-CH voices</text>
-<text x="843" y="701" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="11.5" font-weight="400" fill="#64748B" text-anchor="start">STT + diarisation</text>
+<text x="843" y="701" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="11.5" font-weight="400" fill="#64748B" text-anchor="start">films · B prototype</text>
+<rect x="933" y="650" width="46" height="18" rx="9" fill="#FDF3E1"/>
+<text x="956.0" y="662.5" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#C77700" text-anchor="middle" letter-spacing="0.6">NEXT</text>
 <rect x="999" y="642" width="156" height="92" rx="10" fill="#FFFFFF" stroke="#CBD5E1"/>
 <text x="1011" y="666" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="13" font-weight="650" fill="#0B1220" text-anchor="start">AI Language</text>
 <text x="1011" y="685" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="11.5" font-weight="400" fill="#64748B" text-anchor="start">PII redaction</text>
@@ -172,7 +176,7 @@
 <rect x="1395" y="818" width="175" height="132" rx="12" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
 <rect x="1395" y="830" width="4" height="108" rx="2" fill="#334155"/>
 <text x="1413" y="846" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="14.5" font-weight="650" fill="#0B1220" text-anchor="start">GitHub</text>
-<text x="1413" y="868" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="12.5" font-weight="400" fill="#334155" text-anchor="start">CI: 39 tests + contract</text>
+<text x="1413" y="868" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="12.5" font-weight="400" fill="#334155" text-anchor="start">CI: 78 tests + contract</text>
 <text x="1413" y="887" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="12.5" font-weight="400" fill="#334155" text-anchor="start">Actions → Azure (OIDC)</text>
 <text x="1413" y="906" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="12.5" font-weight="400" fill="#334155" text-anchor="start">no stored secrets</text>
 <text x="1413" y="925" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="12.5" font-weight="400" fill="#334155" text-anchor="start">azd + Bicep</text>

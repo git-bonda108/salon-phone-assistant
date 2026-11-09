@@ -291,7 +291,8 @@ class BookingService:
         }
 
     def book_appointment(self, service: str, start: str, customer_name: str, phone: str,
-                         stylist: str | None = None, notes: str = "", _offer_id: str | None = None) -> dict:
+                         stylist: str | None = None, notes: str = "", _offer_id: str | None = None,
+                         _log_event: bool = True) -> dict:
         svc = self._service(service)
         st = self._stylist(stylist, svc)
         phone = self._phone(phone)
@@ -326,6 +327,8 @@ class BookingService:
             ))
         self.store.upsert_customer(phone, name, svc.id, chosen.id, booked=True)
         info = self._fmt_appt(appt)
+        if _log_event:
+            self.store.add_event("booked", phone, svc.price_chf, {"appointment": info, "via_offer": bool(_offer_id)})
         self.notifier.send("booking.confirmed", {"phone": phone, "name": name, **info})
         return {
             "ok": True, "appointment": info,
@@ -357,6 +360,9 @@ class BookingService:
             appt = self._owned_appointment(phone, appointment_id)
             late = appt.start - self.now() < timedelta(hours=self.salon.late_cancellation_hours)
             self.calendar.delete(appt.id)
+        svc_c = self.salon.find_service(appt.service_id)
+        self.store.add_event("cancelled", phone, svc_c.price_chf if svc_c else None,
+                             {"appointment": self._fmt_appt(appt), "late": late})
         offer = self.on_slot_freed(appt.stylist_id, appt.start, appt.end)
         msg = f"Cancelled {self._fmt_appt(appt)['label']}."
         if late:
@@ -375,14 +381,16 @@ class BookingService:
             try:
                 try:
                     result = self.book_appointment(old.service_id, new_start, old.customer_name, phone,
-                                                   stylist or old.stylist_id, old.notes)
+                                                   stylist or old.stylist_id, old.notes, _log_event=False)
                 except ToolError as exc:
                     if stylist or exc.code != "slot_unavailable":
                         raise
-                    result = self.book_appointment(old.service_id, new_start, old.customer_name, phone, None, old.notes)
+                    result = self.book_appointment(old.service_id, new_start, old.customer_name, phone, None, old.notes,
+                                                   _log_event=False)
             except ToolError:
                 self.calendar.create(NewAppointment(**{k: getattr(old, k) for k in NewAppointment.__dataclass_fields__}))
                 raise
+        self.store.add_event("rescheduled", phone, None, {"from": self._fmt_appt(old), "to": result["appointment"]})
         new_start_dt = parse_local_datetime(result["appointment"]["start"], self.salon.tz)
         offer = None
         if new_start_dt != old.start or result["appointment"]["stylist"] != old.stylist_id:
@@ -409,6 +417,7 @@ class BookingService:
         entry = self.store.add_waitlist(phone, name, svc.id, st.id if st else None, max(d_from, today), d_to, tod)
         self.store.upsert_customer(phone, name)
         pos = self.store.waitlist_position(entry["id"])
+        self.store.add_event("waitlist_joined", phone, None, {"service": svc.id, "waitlist_id": entry["id"]})
         return {
             "ok": True, "waitlist_id": entry["id"], "position": pos,
             "message": f"{name} is on the waitlist (position {pos}) for {svc.name}"
@@ -439,6 +448,8 @@ class BookingService:
                 raise ToolError("Sorry, that slot is no longer available. You stay on the waitlist.", "offer_failed")
             self.store.set_offer_status(offer["id"], "accepted")
             self.store.set_waitlist_status(entry["id"], "booked")
+            svc_a = self.salon.find_service(offer["service_id"])
+            self.store.add_event("offer_accepted", phone, svc_a.price_chf if svc_a else None, {"offer_id": offer["id"]})
         return {**result, "message": "Offer accepted. " + result["message"]}
 
     def decline_offer(self, phone: str, offer_id: str) -> dict:
@@ -448,6 +459,46 @@ class BookingService:
             raise ToolError("I can't find an open offer for this phone number.", "offer_not_found")
         self._close_offer(offer, "declined")
         return {"ok": True, "message": "No problem — the offer is declined and the caller stays on the waitlist."}
+
+    # ------------------------------------------------------------ owner tools
+    def list_appointments(self, date_from: str | None = None, date_to: str | None = None,
+                          stylist: str | None = None) -> dict:
+        today = self.now().date()
+        d_from = self._parse(parse_date, date_from, today) or today
+        d_to = self._parse(parse_date, date_to, today) or d_from + timedelta(days=7)
+        st = self._stylist(stylist)
+        tz = self.salon.tz
+        appts = self.calendar.list_range(datetime.combine(d_from, datetime.min.time(), tz),
+                                         datetime.combine(d_to + timedelta(days=1), datetime.min.time(), tz))
+        rows = [{**self._fmt_appt(a), "customer_name": a.customer_name, "phone": a.phone, "source": a.source}
+                for a in appts if not st or a.stylist_id == st.id]
+        return {"ok": True, "appointments": rows,
+                "message": f"{len(rows)} appointments between {speak_date(d_from)} and {speak_date(d_to)}."}
+
+    def list_waitlist(self) -> dict:
+        waiting = [w for w in self.store.all_waitlist() if w["status"] in ("waiting", "offered")]
+        offers = [self._fmt_offer(o) | {"phone": o["phone"]} for o in self.store.pending_offers()]
+        return {"ok": True, "waitlist": waiting, "open_offers": offers,
+                "message": f"{len(waiting)} people waiting, {len(offers)} open offers."}
+
+    def salon_stats(self, days: int | None = 30) -> dict:
+        days = max(1, min(int(days or 30), 365))
+        events = self.store.events_since(self.now() - timedelta(days=days))
+        count = lambda k: sum(1 for e in events if e["kind"] == k)  # noqa: E731
+        recovered = [e for e in events if e["kind"] == "offer_accepted"]
+        stats = {
+            "days": days,
+            "bookings": count("booked"),
+            "cancellations": count("cancelled"),
+            "reschedules": count("rescheduled"),
+            "waitlist_joined": count("waitlist_joined"),
+            "offers_sent": count("offer_sent"),
+            "slots_recovered": len(recovered),
+            "recovered_chf": round(sum(e["amount_chf"] or 0 for e in recovered), 2),
+        }
+        return {"ok": True, **stats,
+                "message": f"Last {days} days: {stats['bookings']} bookings, {stats['cancellations']} cancellations, "
+                           f"{stats['slots_recovered']} slots recovered (CHF {stats['recovered_chf']:.0f})."}
 
     # ------------------------------------------------- Empty-Chair Recovery
     def on_slot_freed(self, stylist_id: str, start: datetime, end: datetime) -> dict | None:
@@ -476,6 +527,7 @@ class BookingService:
                 offer = self.store.add_offer(entry["id"], entry["phone"], svc.id, st.id, slot.start, slot.end, expires)
                 self.store.set_waitlist_status(entry["id"], "offered")
                 payload = {"phone": entry["phone"], "name": entry["name"], **self._fmt_offer(offer)}
+                self.store.add_event("offer_sent", entry["phone"], svc.price_chf, {"offer_id": offer["id"]})
                 self.notifier.send("waitlist.offer", payload)
                 log.info("waitlist offer %s -> %s", offer["id"], entry["phone"])
                 return offer
@@ -483,6 +535,7 @@ class BookingService:
 
     def _close_offer(self, offer: dict, status: str) -> None:
         self.store.set_offer_status(offer["id"], status)
+        self.store.add_event(f"offer_{status}", offer["phone"], None, {"offer_id": offer["id"]})
         self.store.set_waitlist_status(offer["waitlist_id"], "waiting")
         start = datetime.fromisoformat(offer["start"]).astimezone(self.salon.tz)
         end = datetime.fromisoformat(offer["end"]).astimezone(self.salon.tz)

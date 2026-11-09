@@ -51,6 +51,43 @@ CREATE TABLE IF NOT EXISTS calls (
     received_at TEXT NOT NULL,
     payload TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS events (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    kind TEXT NOT NULL,                       -- booked | cancelled | rescheduled | waitlist_joined | offer_sent | offer_accepted | offer_declined | offer_expired
+    phone TEXT,
+    amount_chf REAL,
+    payload TEXT NOT NULL,
+    at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_events_at ON events(at);
+CREATE TABLE IF NOT EXISTS agent_spans (
+    span_id TEXT PRIMARY KEY,
+    trace_id TEXT NOT NULL,
+    parent_id TEXT,
+    kind TEXT NOT NULL,
+    name TEXT,
+    started_at TEXT,
+    ended_at TEXT,
+    error TEXT,
+    data TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_spans_trace ON agent_spans(trace_id);
+CREATE TABLE IF NOT EXISTS agent_traces (
+    trace_id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    started_at TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS call_reviews (
+    call_id TEXT PRIMARY KEY,
+    phone TEXT,
+    created_at TEXT NOT NULL,
+    engine TEXT NOT NULL,
+    needs_attention INTEGER NOT NULL DEFAULT 0,
+    flags TEXT NOT NULL,
+    review TEXT NOT NULL,
+    redacted_transcript TEXT NOT NULL,
+    trace_id TEXT
+);
 CREATE TABLE IF NOT EXISTS outbox (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     kind TEXT NOT NULL,
@@ -205,6 +242,43 @@ class Store:
     def last_call_for_phone(self, phone: str) -> dict | None:
         rows = self._q("SELECT * FROM calls WHERE phone=? ORDER BY received_at DESC LIMIT 1", (phone,))
         return dict(rows[0]) if rows else None
+
+    # ---- audit events ---------------------------------------------------
+    def add_event(self, kind: str, phone: str | None = None, amount_chf: float | None = None,
+                  payload: dict | None = None) -> None:
+        self._x("INSERT INTO events(kind, phone, amount_chf, payload, at) VALUES (?,?,?,?,?)",
+                (kind, phone, amount_chf, json.dumps(payload or {}, ensure_ascii=False), _now()))
+
+    def events_since(self, since: datetime) -> list[dict]:
+        return [dict(r) for r in self._q("SELECT * FROM events WHERE at >= ? ORDER BY id", (_utc(since),))]
+
+    # ---- agent traces (kept locally, never exported) ----------------------
+    def add_trace(self, trace_id: str, name: str) -> None:
+        self._x("INSERT OR IGNORE INTO agent_traces VALUES (?,?,?)", (trace_id, name, _now()))
+
+    def add_span(self, row: dict) -> None:
+        self._x("INSERT OR REPLACE INTO agent_spans VALUES (?,?,?,?,?,?,?,?,?)",
+                (row["span_id"], row["trace_id"], row.get("parent_id"), row["kind"], row.get("name"),
+                 row.get("started_at"), row.get("ended_at"), row.get("error"),
+                 json.dumps(row.get("data", {}), ensure_ascii=False, default=str)[:20000]))
+
+    def spans(self, trace_id: str) -> list[dict]:
+        rows = self._q("SELECT * FROM agent_spans WHERE trace_id=? ORDER BY started_at", (trace_id,))
+        return [dict(r) | {"data": json.loads(r["data"])} for r in rows]
+
+    def recent_traces(self, limit: int = 30) -> list[dict]:
+        return [dict(r) for r in self._q("SELECT * FROM agent_traces ORDER BY started_at DESC LIMIT ?", (limit,))]
+
+    # ---- call reviews ------------------------------------------------------
+    def save_review(self, call_id: str, phone: str, engine: str, needs_attention: bool, flags: list[str],
+                    review: dict, redacted_transcript: str, trace_id: str | None) -> None:
+        self._x("INSERT OR REPLACE INTO call_reviews VALUES (?,?,?,?,?,?,?,?,?)",
+                (call_id, phone, _now(), engine, 1 if needs_attention else 0, json.dumps(flags),
+                 json.dumps(review, ensure_ascii=False), redacted_transcript, trace_id))
+
+    def reviews(self, limit: int = 50) -> list[dict]:
+        rows = self._q("SELECT * FROM call_reviews ORDER BY created_at DESC LIMIT ?", (limit,))
+        return [dict(r) | {"flags": json.loads(r["flags"]), "review": json.loads(r["review"])} for r in rows]
 
     def add_outbox(self, kind: str, payload: dict, delivered: bool, error: str | None = None) -> None:
         self._x(

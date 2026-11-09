@@ -11,6 +11,7 @@ output is deterministic and safe to show in a live demo.
 from __future__ import annotations
 
 import json
+import logging
 import sys
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -24,6 +25,7 @@ from app.calendars.base import NewAppointment  # noqa: E402
 from app.config import Settings  # noqa: E402
 from app.main import create_app  # noqa: E402
 
+logging.disable(logging.INFO)  # keep the demo output clean
 TZ = ZoneInfo("Europe/Zurich")
 DIM, BOLD, CYAN, GREEN, MAG, RESET = "\033[2m", "\033[1m", "\033[36m", "\033[32m", "\033[35m", "\033[0m"
 if not sys.stdout.isatty():

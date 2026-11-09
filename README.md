@@ -12,10 +12,10 @@ Built on **[Suisse Line](https://suisse-line.ch)** for *Challenge A* of the Suis
 | --- | --- |
 | A trial account at suisse-line.ch | The agent runs **on Suisse Line**: prompt, voice, knowledge base and 9 live tools in [`suisse-line/`](suisse-line), [setup guide](docs/operations/setup-suisse-line.md) |
 | A phone assistant for a small business that books appointments | A real salon model: 3 stylists, 8 services, durations, skills, working days, buffers. A deterministic booking core that cannot double-book ([why](docs/decisions/0002-deterministic-booking-core.md)) |
-| Connect it to any calendar | Google Calendar, one calendar per stylist, which stays the source of truth. Microsoft 365 behind the same interface |
+| Connect it to any calendar | **Google Calendar** and **Outlook / Microsoft 365**, one calendar per stylist, which stays the source of truth. The full booking and recovery flow is tested on both |
 | One feature of my own | **Empty-Chair Recovery**: waitlist → exact match on cancellation → held offer → outbound call → cascade ([why this one](docs/product/brief.md#the-one-feature-empty-chair-recovery)) |
 | Show how it was built | [Architecture](docs/architecture/overview.md), [8 decision records](docs/decisions/README.md), built with AI coding agents |
-| Show how it was tested | [4 levels](docs/evaluation/strategy.md): CI tests → platform-contract tests → AI-driven conversation evaluation with attacker personas → real calls ([safety](docs/safety/guardrails.md)) |
+| Show how it was tested | [4 levels](docs/evaluation/strategy.md): 78 CI tests (incl. agents with a scripted model, guardrails proven by breaking them) → platform contract (Suisse Line limits, Bicep, container) → AI-driven conversation evaluation with attacker personas → real calls ([safety](docs/safety/guardrails.md)) |
 
 The full mapping with status: **[product brief](docs/product/brief.md)**.
 
@@ -25,7 +25,7 @@ The full mapping with status: **[product brief](docs/product/brief.md)**.
 python -m venv .venv && . .venv/bin/activate
 pip install -r requirements-dev.txt
 python scripts/simulate_call.py     # three calls: booking · recognised caller moves · full day → waitlist → cancellation → offer
-pytest                              # 39 tests
+pytest                              # 78 tests
 uvicorn app.main:create_app --factory --reload   # owner view at http://localhost:8000/admin
 ```
 
@@ -37,18 +37,26 @@ Without calendar credentials the backend uses a local SQLite calendar, so everyt
 
 * **Suisse Line is the voice.** Speech, dialect, phone number and outbound calls stay in the product the assistant runs on ([0001](docs/decisions/0001-suisse-line-is-the-voice-runtime.md)).
 * **Deterministic code decides bookings; the model only talks.** Tools are designed for a voice model: enums, at most three options, a speakable `message`, `ok:false` instead of HTTP errors, idempotent, fail-closed ([architecture](docs/architecture/overview.md#tool-design-for-a-voice-model)).
-* **Agents work around the call, not in it:** a call reviewer, a prompt lab, an evaluation lab and an owner copilot, on the OpenAI Agents SDK, using Azure AI services in Switzerland North as tools over MCP ([0005](docs/decisions/0005-ai-around-the-call-not-in-the-booking-path.md)).
+* **One tool registry, three surfaces:** Suisse Line live tools, MCP servers (caller and owner scopes) and the generated `tools.json` all derive from [`app/tools.py`](app/tools.py) ([agents, tools and MCP](docs/architecture/agents-and-tools.md)).
+* **Agents work around the call, not in it:** a call reviewer after every call, a prompt lab on a sandbox calendar, and a read-only owner copilot, on the OpenAI Agents SDK with Azure OpenAI (regional, Switzerland North). They use the MCP tools and Azure AI services as tools: Prompt Shields, harm detection, PII redaction, sentiment ([0005](docs/decisions/0005-ai-around-the-call-not-in-the-booking-path.md)).
 * **Guardrails in five layers**, the strongest of which don't depend on a model ([safety](docs/safety/guardrails.md)).
-* **Switzerland only:** Suisse Line plus Azure Switzerland North with regional model deployments ([0004](docs/decisions/0004-switzerland-only-processing.md)).
+* **Switzerland only:** Suisse Line plus Azure Switzerland North with regional model deployments. Agent traces stay local instead of the SDK's default export to OpenAI ([0004](docs/decisions/0004-switzerland-only-processing.md)).
+* **Keyless launch:** Bicep + `azd`, GitHub Actions with OIDC, managed identity everywhere, secrets generated into Key Vault ([deploy guide](docs/operations/deploy-azure.md)).
 
 ## Repository
 
 ```
 suisse-line/        agent config for the Suisse Line portal: prompt, greeting, knowledge base, tools, outbound agent
-app/                booking core (FastAPI): slots, booking, Empty-Chair Recovery, calendar adapters, HTTP + webhooks
+app/                booking core (FastAPI): slots, booking, Empty-Chair Recovery, HTTP + webhooks
+  tools.py          the tool registry (→ live tools, MCP, tools.json)
+  mcp_server.py     MCP servers: caller + owner scopes
+  ai_tools.py       Azure AI Content Safety + Language as tools, with offline rules
+  ai_agents/        prompt lab, call reviewer, owner copilot, guardrails, local tracing
+  calendars/        Google, Outlook / Microsoft 365, SQLite
+infra/              Bicep (Switzerland North), Cloud Shell bootstrap for keyless GitHub deployment
 data/salon.json     the business: services, prices, stylists, opening hours (a new business = a new file)
-tests/              39 tests + conversation scenarios for the real voice agent
-scripts/            call simulator · voice-agent evaluation · architecture diagram as code
+tests/              78 tests + conversation scenarios for the real voice agent
+scripts/            call simulator · voice-agent evaluation · export_tools · verify_deployment · connect_outlook · diagram as code
 docs/               product · architecture · decisions · safety · evaluation · operations · voice profiles
 ```
 
@@ -56,7 +64,7 @@ docs/               product · architecture · decisions · safety · evaluation
 
 | Done | In progress |
 | --- | --- |
-| Suisse Line agent configuration, booking core, Empty-Chair Recovery, Google Calendar adapter, signed webhooks, owner view, 39 tests in CI, documentation and decision records | Azure Switzerland North deployment (Bicep, keyless), MCP server, agents and guardrails, evaluation lab, web app with films, Microsoft 365 adapter, live phone number and real-call results |
+| Suisse Line agent configuration · booking core · Empty-Chair Recovery · Google and Outlook calendars · tool registry · MCP servers · Azure AI tools · agents (prompt lab, call reviewer, owner copilot) with guardrails and local tracing · Key Vault secrets · Bicep + keyless deploy pipeline · 78 tests in CI | first Azure deployment (needs the one-time Cloud Shell setup) · evaluation lab · web app with films · live phone number and real-call results |
 
 ---
 *Bonus, Challenge B: a concept for voice profiles in Suisse Meets, including how it plugs into the Suisse Meets API → [docs/voice-profiles](docs/voice-profiles/concept.md).*

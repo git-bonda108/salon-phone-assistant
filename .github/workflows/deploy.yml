@@ -1,0 +1,52 @@
+name: deploy
+# Keyless deployment to Azure Switzerland North (ADR 0007).
+# Runs only once the repository variables from infra/bootstrap.sh exist.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  id-token: write   # OIDC token for Azure, no stored secret
+  contents: read
+
+concurrency:
+  group: deploy-main
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: ${{ vars.AZURE_CLIENT_ID != '' }}
+    runs-on: ubuntu-latest
+    env:
+      AZURE_ENV_NAME: lina
+      AZURE_LOCATION: ${{ vars.AZURE_LOCATION || 'switzerlandnorth' }}
+      AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      AZURE_RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
+      AZURE_OWNER_OBJECT_ID: ${{ vars.AZURE_OWNER_OBJECT_ID }}
+      GRAPH_CLIENT_ID: ${{ vars.GRAPH_CLIENT_ID }}
+      CALENDAR_BACKEND: ${{ vars.CALENDAR_BACKEND || 'sqlite' }}
+      GRAPH_CALENDARS: ${{ vars.GRAPH_CALENDARS || '{}' }}
+      DEPLOY_JUDGE: ${{ vars.DEPLOY_JUDGE || 'false' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements-dev.txt && pytest
+      - uses: Azure/setup-azd@v2
+      - name: Sign in (OIDC)
+        run: |
+          azd auth login --client-id "${{ vars.AZURE_CLIENT_ID }}" \
+            --federated-credential-provider github --tenant-id "${{ vars.AZURE_TENANT_ID }}"
+      - name: Select environment
+        run: |
+          azd env new "$AZURE_ENV_NAME" --location "$AZURE_LOCATION" --subscription "$AZURE_SUBSCRIPTION_ID" --no-prompt || azd env select "$AZURE_ENV_NAME"
+          azd env set AZURE_RESOURCE_GROUP "$AZURE_RESOURCE_GROUP"
+          azd env refresh --no-prompt || true
+      - name: Provision (Bicep)
+        run: azd provision --no-prompt
+      - name: Deploy (remote image build in ACR)
+        run: azd deploy --no-prompt
+      - name: Verify deployment
+        run: python scripts/verify_deployment.py "$(azd env get-value SERVICE_API_URI)"
