@@ -128,8 +128,8 @@ pill(999, 642, 156, 92, "AI Language", ["PII redaction", "language · sentiment"
 pill(1167, 642, 156, 92, "Content Safety", ["Prompt Shields", "harm categories"])
 shield(1309, 650, "L4")
 
-box(645, 776, 695, 208, "Web app · owner cockpit and demo", [], tag="NEXT")
-chips = ["Overview", "Calendar", "Calls", "Waitlist", "Try it", "Proof & quality", "Safety", "How it works"]
+box(645, 776, 695, 208, "Web app · owner cockpit and demo", [], tag="BUILT")
+chips = ["Overview", "Calendar", "Recovery", "Call reviews", "Talk to Lina", "Copilot", "Quality", "How it works"]
 cx = 663
 for c in chips:
     w = 18 + len(c) * 7.4
@@ -146,7 +146,7 @@ text(1395, 150, "SALON'S OWN", size=11, weight=750, fill=MUTED, ls="1.2")
 box(1395, 172, 175, 132, "Calendar", ["Google Calendar", "Microsoft 365 (Graph)", "1 calendar / stylist", "staff edit as usual"], bar=PINE, tag=None, title_size=14.5)
 status(1556, 178, "BUILT")
 text(1395, 800, "DELIVERY", size=11, weight=750, fill=MUTED, ls="1.2")
-box(1395, 818, 175, 132, "GitHub", ["CI: 78 tests + contract", "Actions → Azure (OIDC)", "no stored secrets", "azd + Bicep"], bar=SLATE, title_size=14.5)
+box(1395, 818, 175, 132, "GitHub", ["CI: 84 tests + contract", "Actions → Azure (OIDC)", "no stored secrets", "azd + Bicep"], bar=SLATE, title_size=14.5)
 
 # flows
 arrow("M215,212 H268", LAKE); num(241, 196, "1")

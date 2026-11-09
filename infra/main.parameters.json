@@ -6,6 +6,7 @@
     "location": { "value": "${AZURE_LOCATION=switzerlandnorth}" },
     "ownerObjectId": { "value": "${AZURE_OWNER_OBJECT_ID=}" },
     "deployJudge": { "value": "${DEPLOY_JUDGE=false}" },
+    "deployModels": { "value": "${DEPLOY_MODELS=true}" },
     "demoMode": { "value": "${DEMO_MODE=true}" },
     "calendarBackend": { "value": "${CALENDAR_BACKEND=sqlite}" },
     "graphAuth": { "value": "${GRAPH_AUTH=delegated}" },

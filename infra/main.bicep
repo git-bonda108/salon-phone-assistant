@@ -22,6 +22,9 @@ param chatModel string = 'gpt-4.1-mini'
 param chatModelVersion string = '2025-04-14'
 param chatCapacity int = 30
 
+@description('Create/update the model deployments. The pipeline sets false once they exist: repeated writes to a model deployment can be refused by Azure for new subscriptions.')
+param deployModels bool = true
+
 @description('Optional stronger model for the call reviewer / evaluation judge. Needs regional quota.')
 param deployJudge bool = false
 param judgeModel string = 'gpt-5.1'
@@ -151,14 +154,14 @@ resource project 'Microsoft.CognitiveServices/accounts/projects@2025-06-01' = {
   dependsOn: [ chat, judge ]
 }
 
-resource chat 'Microsoft.CognitiveServices/accounts/deployments@2025-06-01' = {
+resource chat 'Microsoft.CognitiveServices/accounts/deployments@2025-06-01' = if (deployModels) {
   parent: ai
   name: chatModel
   sku: { name: 'Standard', capacity: chatCapacity } // regional, not Global/DataZone
   properties: { model: { format: 'OpenAI', name: chatModel, version: chatModelVersion } }
 }
 
-resource judge 'Microsoft.CognitiveServices/accounts/deployments@2025-06-01' = if (deployJudge) {
+resource judge 'Microsoft.CognitiveServices/accounts/deployments@2025-06-01' = if (deployModels && deployJudge) {
   parent: ai
   name: judgeModel
   sku: { name: 'Standard', capacity: judgeCapacity }
@@ -221,8 +224,8 @@ resource app 'Microsoft.App/containerApps@2024-03-01' = {
             { name: 'KEY_VAULT_URL', value: vault.properties.vaultUri }
             { name: 'AZURE_AI_ENDPOINT', value: 'https://${ai.properties.customSubDomainName}.cognitiveservices.azure.com' }
             { name: 'AZURE_OPENAI_ENDPOINT', value: 'https://${ai.properties.customSubDomainName}.openai.azure.com' }
-            { name: 'AZURE_OPENAI_DEPLOYMENT', value: chat.name }
-            { name: 'AZURE_OPENAI_JUDGE_DEPLOYMENT', value: deployJudge ? judgeModel : chat.name }
+            { name: 'AZURE_OPENAI_DEPLOYMENT', value: chatModel }
+            { name: 'AZURE_OPENAI_JUDGE_DEPLOYMENT', value: deployJudge ? judgeModel : chatModel }
             { name: 'APPLICATIONINSIGHTS_CONNECTION_STRING', value: insights.properties.ConnectionString }
             { name: 'CALENDAR_BACKEND', value: calendarBackend }
             { name: 'GRAPH_AUTH', value: graphAuth }

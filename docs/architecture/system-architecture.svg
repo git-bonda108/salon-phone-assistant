@@ -138,24 +138,24 @@
 <text x="0" y="3.5" font-family="Inter, system-ui, sans-serif" font-size="9" font-weight="800" fill="#fff" text-anchor="middle">L4</text></g>
 <rect x="645" y="776" width="695" height="208" rx="12" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
 <text x="663" y="804" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="15" font-weight="650" fill="#0B1220" text-anchor="start">Web app · owner cockpit and demo</text>
-<rect x="1280" y="790" width="46" height="18" rx="9" fill="#FDF3E1"/>
-<text x="1303.0" y="802.5" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#C77700" text-anchor="middle" letter-spacing="0.6">NEXT</text>
+<rect x="1276" y="790" width="50" height="18" rx="9" fill="#E7F5EE"/>
+<text x="1301.0" y="802.5" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#13804B" text-anchor="middle" letter-spacing="0.6">BUILT</text>
 <rect x="663" y="818" width="77.2" height="28" rx="14" fill="#FFFFFF" stroke="#CBD5E1"/>
 <text x="701.6" y="836.5" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="12" font-weight="600" fill="#334155" text-anchor="middle">Overview</text>
 <rect x="748.2" y="818" width="77.2" height="28" rx="14" fill="#FFFFFF" stroke="#CBD5E1"/>
 <text x="786.8000000000001" y="836.5" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="12" font-weight="600" fill="#334155" text-anchor="middle">Calendar</text>
-<rect x="833.4000000000001" y="818" width="55.0" height="28" rx="14" fill="#FFFFFF" stroke="#CBD5E1"/>
-<text x="860.9000000000001" y="836.5" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="12" font-weight="600" fill="#334155" text-anchor="middle">Calls</text>
-<rect x="896.4000000000001" y="818" width="77.2" height="28" rx="14" fill="#FFFFFF" stroke="#CBD5E1"/>
-<text x="935.0000000000001" y="836.5" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="12" font-weight="600" fill="#334155" text-anchor="middle">Waitlist</text>
-<rect x="981.6000000000001" y="818" width="62.400000000000006" height="28" rx="14" fill="#FFFFFF" stroke="#CBD5E1"/>
-<text x="1012.8000000000002" y="836.5" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="12" font-weight="600" fill="#334155" text-anchor="middle">Try it</text>
-<rect x="1052.0000000000002" y="818" width="129.0" height="28" rx="14" fill="#FFFFFF" stroke="#CBD5E1"/>
-<text x="1116.5000000000002" y="836.5" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="12" font-weight="600" fill="#334155" text-anchor="middle">Proof &amp; quality</text>
-<rect x="1189.0000000000002" y="818" width="62.400000000000006" height="28" rx="14" fill="#FFFFFF" stroke="#CBD5E1"/>
-<text x="1220.2000000000003" y="836.5" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="12" font-weight="600" fill="#334155" text-anchor="middle">Safety</text>
-<rect x="1259.4000000000003" y="818" width="106.80000000000001" height="28" rx="14" fill="#FFFFFF" stroke="#CBD5E1"/>
-<text x="1312.8000000000004" y="836.5" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="12" font-weight="600" fill="#334155" text-anchor="middle">How it works</text>
+<rect x="833.4000000000001" y="818" width="77.2" height="28" rx="14" fill="#FFFFFF" stroke="#CBD5E1"/>
+<text x="872.0000000000001" y="836.5" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="12" font-weight="600" fill="#334155" text-anchor="middle">Recovery</text>
+<rect x="918.6000000000001" y="818" width="106.80000000000001" height="28" rx="14" fill="#FFFFFF" stroke="#CBD5E1"/>
+<text x="972.0000000000001" y="836.5" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="12" font-weight="600" fill="#334155" text-anchor="middle">Call reviews</text>
+<rect x="1033.4" y="818" width="106.80000000000001" height="28" rx="14" fill="#FFFFFF" stroke="#CBD5E1"/>
+<text x="1086.8000000000002" y="836.5" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="12" font-weight="600" fill="#334155" text-anchor="middle">Talk to Lina</text>
+<rect x="1148.2" y="818" width="69.80000000000001" height="28" rx="14" fill="#FFFFFF" stroke="#CBD5E1"/>
+<text x="1183.1000000000001" y="836.5" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="12" font-weight="600" fill="#334155" text-anchor="middle">Copilot</text>
+<rect x="1226.0" y="818" width="69.80000000000001" height="28" rx="14" fill="#FFFFFF" stroke="#CBD5E1"/>
+<text x="1260.9" y="836.5" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="12" font-weight="600" fill="#334155" text-anchor="middle">Quality</text>
+<rect x="1303.8" y="818" width="106.80000000000001" height="28" rx="14" fill="#FFFFFF" stroke="#CBD5E1"/>
+<text x="1357.2" y="836.5" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="12" font-weight="600" fill="#334155" text-anchor="middle">How it works</text>
 <text x="663" y="878" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="12" font-weight="400" fill="#334155" text-anchor="start">live bookings and waitlist · call reviews with agent traces · prompt lab next to the Suisse Line voice widget</text>
 <text x="663" y="898" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="12" font-weight="400" fill="#334155" text-anchor="start">evaluation scores and red-team results · guardrail counters · data map · films and interactive architecture</text>
 <rect x="663" y="916" width="200" height="50" rx="10" fill="#FFFFFF" stroke="#CBD5E1"/>
@@ -176,7 +176,7 @@
 <rect x="1395" y="818" width="175" height="132" rx="12" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
 <rect x="1395" y="830" width="4" height="108" rx="2" fill="#334155"/>
 <text x="1413" y="846" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="14.5" font-weight="650" fill="#0B1220" text-anchor="start">GitHub</text>
-<text x="1413" y="868" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="12.5" font-weight="400" fill="#334155" text-anchor="start">CI: 78 tests + contract</text>
+<text x="1413" y="868" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="12.5" font-weight="400" fill="#334155" text-anchor="start">CI: 84 tests + contract</text>
 <text x="1413" y="887" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="12.5" font-weight="400" fill="#334155" text-anchor="start">Actions → Azure (OIDC)</text>
 <text x="1413" y="906" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="12.5" font-weight="400" fill="#334155" text-anchor="start">no stored secrets</text>
 <text x="1413" y="925" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="12.5" font-weight="400" fill="#334155" text-anchor="start">azd + Bicep</text>
