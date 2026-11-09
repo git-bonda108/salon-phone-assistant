@@ -144,6 +144,8 @@ resource project 'Microsoft.CognitiveServices/accounts/projects@2025-06-01' = {
   location: location
   identity: { type: 'SystemAssigned' }
   properties: { displayName: 'Lina – salon phone assistant', description: 'Agents, evaluation and guardrails' }
+  // The account accepts one change at a time: create the project after the model deployments.
+  dependsOn: [ chat, judge ]
 }
 
 resource chat 'Microsoft.CognitiveServices/accounts/deployments@2025-06-01' = {
