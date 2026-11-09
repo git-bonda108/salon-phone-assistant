@@ -449,7 +449,8 @@ class BookingService:
             self.store.set_offer_status(offer["id"], "accepted")
             self.store.set_waitlist_status(entry["id"], "booked")
             svc_a = self.salon.find_service(offer["service_id"])
-            self.store.add_event("offer_accepted", phone, svc_a.price_chf if svc_a else None, {"offer_id": offer["id"]})
+            self.store.add_event("offer_accepted", phone, svc_a.price_chf if svc_a else None,
+                                 {"offer_id": offer["id"], "label": self._fmt_offer(offer)["label"]})
         return {**result, "message": "Offer accepted. " + result["message"]}
 
     def decline_offer(self, phone: str, offer_id: str) -> dict:
@@ -527,7 +528,8 @@ class BookingService:
                 offer = self.store.add_offer(entry["id"], entry["phone"], svc.id, st.id, slot.start, slot.end, expires)
                 self.store.set_waitlist_status(entry["id"], "offered")
                 payload = {"phone": entry["phone"], "name": entry["name"], **self._fmt_offer(offer)}
-                self.store.add_event("offer_sent", entry["phone"], svc.price_chf, {"offer_id": offer["id"]})
+                self.store.add_event("offer_sent", entry["phone"], svc.price_chf,
+                                     {"offer_id": offer["id"], "label": self._fmt_offer(offer)["label"]})
                 self.notifier.send("waitlist.offer", payload)
                 log.info("waitlist offer %s -> %s", offer["id"], entry["phone"])
                 return offer

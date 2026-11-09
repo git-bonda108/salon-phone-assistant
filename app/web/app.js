@@ -65,15 +65,7 @@ async function overview(el) {
     <span class="pill pill-ch"><span class="ch"></span>${esc(e.region)}</span>
   </div></div>
 
-  <div class="grid k6">
-    ${kpi("Bookings · 30 days", s.bookings, "by phone and waitlist", "accent")}
-    ${kpi("Upcoming · 7 days", o.upcoming_7d, "in the stylists' calendars", "accent")}
-    ${kpi("Slots recovered", s.slots_recovered, `${s.offers_sent} offers sent`, "win")}
-    ${kpi("Revenue recovered", chf(s.recovered_chf), "from cancellations", "win")}
-    ${kpi("On the waitlist", o.waitlist, "matched on every cancellation", "")}
-    ${kpi("Calls reviewed", o.calls_reviewed, `${o.calls_flagged} need attention`, o.calls_flagged ? "warn" : "")}
-    ${kpi("Guardrail blocks", o.guardrail_blocks, "attacks stopped before the model", "")}
-  </div>
+  <div class="grid k6" id="kpis">${kpis(o)}</div>
 
   <div class="grid two" style="margin-top:16px">
     <div class="card">
@@ -92,6 +84,16 @@ async function overview(el) {
   $("#reset-demo").onclick = resetDemo;
   renderFeed();
 }
+function kpis(o) {
+  const s = o.stats;
+  return `${kpi("Bookings · 30 days", s.bookings, "by phone and waitlist", "accent")}
+    ${kpi("Upcoming · 7 days", o.upcoming_7d, "in the stylists' calendars", "accent")}
+    ${kpi("Slots recovered", s.slots_recovered, `${s.offers_sent} offers sent`, "win")}
+    ${kpi("Revenue recovered", chf(s.recovered_chf), "from cancellations", "win")}
+    ${kpi("On the waitlist", o.waitlist, "matched on every cancellation", "")}
+    ${kpi("Calls reviewed", o.calls_reviewed, `${o.calls_flagged} need attention`, o.calls_flagged ? "warn" : "")}
+    ${kpi("Guardrail blocks", o.guardrail_blocks, "attacks stopped before the model", "")}`;
+}
 function kpi(label, value, sub, cls) {
   return `<div class="card kpi ${cls}"><div class="label">${esc(label)}</div><div class="value">${esc(value)}</div><div class="muted small">${esc(sub)}</div></div>`;
 }
@@ -100,7 +102,7 @@ async function renderFeed() {
   $("#feed").innerHTML = events.length ? events.map((ev) => {
     const [label, cls] = KIND[ev.kind] || [ev.kind, "b-info"];
     const p = ev.payload || {};
-    const what = p.appointment?.label || p.from?.label || p.service || p.agent || p.offer_id || "";
+    const what = p.appointment?.label || p.label || p.from?.label || p.service || (p.agent ? `${p.agent} · ${p.type || ""}` : "") || "";
     return `<li><span><span class="badge ${cls}">${esc(label)}</span></span><span>${esc(what)}
       <span class="muted small"> · ${esc((ev.at || "").slice(5, 16).replace("T", " "))} UTC${ev.amount_chf && ev.kind === "offer_accepted" ? " · +" + chf(ev.amount_chf) : ""}</span></span></li>`;
   }).join("") : `<li class="empty">No activity yet.</li>`;
@@ -116,7 +118,7 @@ async function playRecovery() {
       ol.insertAdjacentHTML("beforeend", `<li class="done" data-n="${i + 1}"><b>${esc(r.steps[i].step)}</b><span class="muted small">${esc(r.steps[i].detail)}</span></li>`);
     }
     toast("Slot recovered: the chair is full again.");
-    await loadOverview(); renderFeed();
+    const fresh = await loadOverview(); $("#kpis").innerHTML = kpis(fresh); renderFeed();
   } catch (e) { toast(e.message); } finally { btn.disabled = false; }
 }
 async function resetDemo() {

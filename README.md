@@ -35,7 +35,7 @@ PUBLIC_DEMO=1 DEMO_SEED=1 uvicorn app.main:create_app --factory --reload   # web
 
 Without calendar credentials the backend uses a local SQLite calendar, so everything runs immediately.
 
-![Owner view: bookings, waitlist, a pending slot offer, notifications and call log](docs/img/admin-dashboard.png)
+![Web app: live key figures, Empty-Chair Recovery replay and activity feed](docs/img/web-overview.png)
 
 ## How it is built
 
